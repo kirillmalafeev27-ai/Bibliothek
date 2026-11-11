@@ -1,0 +1,39 @@
+{
+  "name": "der-blinde-bibliothekar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "«Слепой библиотекарь» (Der blinde Bibliothekar) — игра-стелс для изучения немецкого",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "sim": "tsx tools/sim.ts",
+    "e2e": "playwright test",
+    "shots": "playwright test e2e/screenshots.spec.ts"
+  },
+  "dependencies": {
+    "@fontsource/rubik": "^5.3.0",
+    "@fontsource/ruslan-display": "^5.3.0",
+    "@fontsource/unifrakturmaguntia": "^5.3.0",
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
