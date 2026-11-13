@@ -1,0 +1,1334 @@
+/*
+ * Тема «пергамент» (план, 11.1.4, 7.1): экран — разворот кодекса. Мир — миниатюра
+ * в золотой рамке, панель вопроса — столбец текста под красной рубрикой.
+ * Цветов здесь нет: все краски приходят из src/config/palette.ts через CSS-переменные
+ * (см. src/shared/themes/parchment.ts).
+ */
+
+.lib-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: var(--ink);
+  background-color: var(--parchment);
+  background-image: var(--tex-parchment, none);
+  background-size: 384px 384px;
+  font-family: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.25;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  isolation: isolate;
+}
+
+.lib-root *,
+.lib-root *::before,
+.lib-root *::after {
+  box-sizing: border-box;
+}
+
+/* Потемневший край страницы. */
+.lib-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    inset 0 0 120px var(--edge-soft),
+    inset 0 0 22px var(--edge-hard);
+}
+
+/* Лоза по краю страницы — в просветах между панелями. */
+.lib-vine {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  background-repeat: repeat;
+  opacity: 0.9;
+}
+.lib-vine--top,
+.lib-vine--bottom {
+  left: 0;
+  right: 0;
+  height: var(--vine-size);
+  background-image: var(--tex-vine-h, none);
+  background-size: auto var(--vine-size);
+  background-repeat: repeat-x;
+}
+.lib-vine--top {
+  top: 0;
+}
+.lib-vine--bottom {
+  bottom: 0;
+  transform: scaleY(-1);
+}
+.lib-vine--left,
+.lib-vine--right {
+  top: 0;
+  bottom: 0;
+  width: var(--vine-size);
+  background-image: var(--tex-vine-v, none);
+  background-size: var(--vine-size) auto;
+  background-repeat: repeat-y;
+}
+.lib-vine--left {
+  left: 0;
+}
+.lib-vine--right {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.lib-world,
+.lib-question,
+.lib-gear {
+  position: absolute;
+  z-index: 2;
+}
+
+.lib-world canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  outline: none;
+}
+
+/* ───────────── Панель вопроса (11.2) ───────────── */
+
+.lib-question {
+  display: flex;
+  flex-direction: column;
+  gap: var(--q-gap, 8px);
+  padding: var(--q-pad, 12px);
+  background-color: var(--panel);
+  background-image: var(--tex-parchment-light, none);
+  background-size: 384px 384px;
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+  /* Двойная линейка: чернильная обводка и волосяная линия внутри. */
+  box-shadow:
+    inset 0 0 0 3px var(--panel),
+    inset 0 0 0 4px var(--ink-hair),
+    0 1px 0 var(--edge-hard),
+    0 6px 16px -10px var(--ink-shadow);
+}
+
+.lib-question::before,
+.lib-question::after {
+  /* Золотые уголки столбца текста. */
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background-image: var(--tex-corner, none);
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+.lib-question::before {
+  left: -3px;
+  top: -3px;
+}
+.lib-question::after {
+  right: -3px;
+  bottom: -3px;
+  transform: rotate(180deg);
+}
+
+.lib-q-head {
+  flex: none;
+  min-height: 1.3em;
+  color: var(--rubric);
+  font-weight: 600;
+  font-size: var(--q-head, 17px);
+  letter-spacing: 0.01em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 0;
+}
+.lib-q-head__main::first-letter {
+  font-size: 1.28em;
+}
+.lib-q-head__quiet {
+  font-weight: 500;
+  font-size: 0.86em;
+  color: var(--alarm-dark);
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.lib-q-head__quiet.is-on {
+  opacity: 1;
+  transform: none;
+}
+.lib-q-head__quiet::before {
+  content: '';
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.4em;
+  border-radius: 50%;
+  border: 1.5px dashed var(--gold-ink);
+  vertical-align: 0;
+}
+
+.lib-q-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--q-gap, 8px);
+  transition:
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+.lib-question.is-paused .lib-q-body,
+.lib-question.is-frozen .lib-q-body {
+  /* На паузе вопрос размыт, иначе пауза — бесплатное время на раздумье (2.7.2). */
+  filter: blur(9px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.lib-q-prompt {
+  flex: 1 1 auto;
+  min-height: var(--q-prompt-min, 46px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 4px 4px;
+  border-top: 1px solid var(--ink-hair);
+  border-bottom: 1px solid var(--ink-hair);
+}
+.lib-q-initial {
+  flex: none;
+  width: var(--q-initial, 42px);
+  height: var(--q-initial, 42px);
+  display: grid;
+  place-items: center;
+  font-family: 'Ruslan Display', 'Rubik', serif;
+  font-size: calc(var(--q-initial, 42px) * 0.62);
+  line-height: 1;
+  color: var(--gold-light);
+  text-shadow:
+    0 1px 0 var(--ink),
+    1px 0 0 var(--ink),
+    -1px 0 0 var(--ink),
+    0 -1px 0 var(--ink);
+  background-image: var(--tex-initial, none);
+  background-size: 100% 100%;
+  background-color: var(--robe);
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px var(--gold), 0 0 0 3px var(--ink);
+  margin: 3px;
+}
+.lib-q-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--q-font, 24px);
+  font-weight: 500;
+  line-height: 1.15;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: anywhere;
+  /* Немецкий текст никогда не переводится в верхний регистр (11.2.3). */
+  text-transform: none;
+}
+.lib-q-text.is-note {
+  color: var(--ink-faded);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.lib-q-options {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--q-opt-gap, 8px);
+}
+.lib-root[data-orient='landscape'] .lib-q-options {
+  grid-template-columns: 1fr;
+}
+.lib-q-options[data-count='3'] .lib-opt:last-child {
+  grid-column: 1 / -1;
+}
+.lib-root[data-orient='landscape'] .lib-q-options[data-count='3'] .lib-opt:last-child {
+  grid-column: auto;
+}
+
+.lib-opt {
+  position: relative;
+  min-height: var(--q-opt-h, 56px);
+  padding: 6px 12px 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: var(--q-opt-font, 19px);
+  font-weight: 500;
+  line-height: 1.12;
+  color: var(--ink);
+  text-align: left;
+  text-transform: none;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: anywhere;
+  background-color: var(--tablet);
+  background-image: linear-gradient(180deg, var(--tablet-hi), var(--tablet) 55%, var(--tablet-lo));
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow:
+    0 2px 0 var(--ink),
+    0 3px 6px -2px var(--ink-shadow);
+  cursor: pointer;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease,
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.lib-opt::before,
+.lib-opt::after {
+  /* Золотые уголки таблички. */
+  content: '';
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  background-image: var(--tex-corner-small, none);
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+.lib-opt::before {
+  left: 1px;
+  top: 1px;
+}
+.lib-opt::after {
+  right: 1px;
+  bottom: 1px;
+  transform: rotate(180deg);
+}
+.lib-opt:active:not(:disabled),
+.lib-opt.is-pressed {
+  /* При нажатии табличка смещается на 2 px (11.2.4). */
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+.lib-opt:focus-visible,
+.lib-btn:focus-visible,
+.lib-icon-btn:focus-visible,
+.lib-level:focus-visible {
+  outline: 3px solid var(--robe);
+  outline-offset: 2px;
+}
+.lib-opt__key {
+  flex: none;
+  min-width: 1.5em;
+  height: 1.5em;
+  display: none;
+  place-items: center;
+  font-size: 0.68em;
+  font-weight: 600;
+  color: var(--ink-faded);
+  border: 1px solid var(--ink-hair);
+  border-radius: 4px;
+  background: var(--panel);
+}
+.lib-root[data-pointer='fine'] .lib-opt__key {
+  display: grid;
+}
+.lib-opt__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.lib-opt:disabled {
+  cursor: default;
+}
+.lib-q-options.is-dim .lib-opt {
+  /* Готовое действие: таблички бледнеют и неактивны (11.2.7). */
+  opacity: 0.42;
+  box-shadow: 0 1px 0 var(--ink-faded);
+}
+.lib-opt.is-correct {
+  background-image: none;
+  background-color: var(--good);
+  box-shadow:
+    0 2px 0 var(--ink),
+    0 0 0 3px var(--good-glow);
+}
+.lib-opt.is-wrong {
+  background-image: none;
+  background-color: var(--bad);
+  animation: lib-shake 0.36s ease;
+}
+.lib-opt.is-reveal {
+  background-image: none;
+  background-color: var(--good);
+}
+.lib-q-body.is-swap {
+  animation: lib-swap 0.15s ease;
+}
+
+@keyframes lib-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  45% {
+    transform: translateX(5px);
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+  88% {
+    transform: translateX(2px);
+  }
+}
+@keyframes lib-swap {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ───────────── Плашка снаряжения (11.3) ───────────── */
+
+.lib-gear {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 4px;
+  pointer-events: none;
+}
+.lib-gear > * {
+  pointer-events: auto;
+}
+.lib-gear[data-placement='side'] {
+  flex-direction: column;
+  padding: 4px 2px;
+}
+.lib-gear__group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  min-height: calc(var(--gear-size) - 8px);
+  background-color: var(--panel);
+  background-image: var(--tex-parchment-light, none);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 1px 0 var(--edge-hard);
+}
+.lib-gear[data-placement='side'] .lib-gear__group {
+  flex-direction: column;
+  padding: 7px 3px;
+  min-height: 0;
+  min-width: calc(var(--gear-size) - 8px);
+  border-radius: 14px;
+}
+.lib-gear__items {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.lib-gear[data-placement='side'] .lib-gear__items {
+  flex-direction: column;
+}
+.lib-gear__sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 4px;
+  background: var(--ink-hair);
+}
+.lib-gear[data-placement='side'] .lib-gear__sep {
+  width: auto;
+  height: 1px;
+  margin: 4px 2px;
+}
+.lib-slot {
+  position: relative;
+  width: var(--slot, 26px);
+  height: var(--slot, 26px);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s cubic-bezier(0.2, 1.6, 0.4, 1),
+    filter 0.2s ease;
+}
+.lib-slot.is-empty {
+  opacity: 0.32;
+  filter: grayscale(1);
+}
+.lib-slot.is-pop {
+  animation: lib-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+.lib-slot--page.is-empty {
+  /* Недостающие части карты обведены пунктиром (11.3). */
+  opacity: 1;
+  filter: none;
+  background-image: none !important;
+  border: 1.5px dashed var(--ink-faded);
+  border-radius: 3px;
+  transform: scale(0.82);
+}
+.lib-slot--card.is-void::after {
+  /* Отобранный билет перечёркнут штампом «Ungültig» (11.3). */
+  content: '';
+  position: absolute;
+  inset: -3px;
+  background-image: var(--icon-void, none);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: lib-stamp 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.lib-slot--card.is-void {
+  opacity: 1;
+  filter: grayscale(0.7);
+}
+@keyframes lib-pop {
+  0% {
+    transform: scale(0.4) rotate(-14deg);
+  }
+  60% {
+    transform: scale(1.25) rotate(4deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes lib-stamp {
+  0% {
+    transform: scale(2.4) rotate(-22deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(0.92) rotate(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-12deg);
+  }
+}
+
+.lib-icon-btn {
+  position: relative;
+  flex: none;
+  min-width: var(--gear-btn, 40px);
+  height: var(--gear-btn, 40px);
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background-color: var(--tablet);
+  background-image: linear-gradient(180deg, var(--tablet-hi), var(--tablet) 55%, var(--tablet-lo));
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 2px 0 var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease,
+    background-color 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.lib-icon-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+.lib-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.lib-icon-btn.is-on {
+  background-image: none;
+  background-color: var(--gold-light);
+  box-shadow:
+    0 2px 0 var(--ink),
+    0 0 0 3px var(--gold-glow);
+}
+.lib-icon-btn__icon {
+  width: 22px;
+  height: 22px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.lib-icon-btn__label {
+  white-space: nowrap;
+}
+.lib-gear[data-tier='ultra'] .lib-icon-btn__label,
+.lib-gear[data-placement='side'] .lib-icon-btn__label,
+.lib-gear.is-narrow .lib-icon-btn__label {
+  display: none;
+}
+.lib-gear[data-placement='side'] .lib-icon-btn {
+  padding: 0;
+  width: var(--gear-btn, 40px);
+}
+.lib-gear__buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lib-gear[data-placement='side'] .lib-gear__buttons {
+  flex-direction: column;
+}
+
+/* ───────────── Кнопки и экраны (11.5) ───────────── */
+
+.lib-btn {
+  position: relative;
+  min-height: 52px;
+  padding: 10px 26px;
+  font: inherit;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+  background-color: var(--tablet);
+  background-image: linear-gradient(180deg, var(--tablet-hi), var(--tablet) 55%, var(--tablet-lo));
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  box-shadow:
+    0 3px 0 var(--ink),
+    0 5px 10px -4px var(--ink-shadow);
+  cursor: pointer;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.lib-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+.lib-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.lib-btn--gold {
+  /* В интерфейсе золото — просто украшение. */
+  color: var(--ink);
+  background-color: var(--gold);
+  background-image: var(--tex-gold, linear-gradient(135deg, var(--gold-light), var(--gold) 50%, var(--gold-dark)));
+  background-size: 180px 180px;
+  font-family: 'Ruslan Display', 'Rubik', serif;
+  font-weight: 400;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  padding: 12px 40px;
+  overflow: hidden;
+}
+.lib-btn--small {
+  min-height: 42px;
+  padding: 6px 16px;
+  font-size: 16px;
+}
+.lib-btn--quiet {
+  background-image: none;
+  background-color: transparent;
+  box-shadow: none;
+  border-color: var(--ink-hair);
+  color: var(--ink-faded);
+  font-weight: 500;
+}
+
+/* Блик золота: заранее отрисованная полоса проходит по золотым элементам раз в 3–5 с. */
+.lib-glint {
+  position: relative;
+  overflow: hidden;
+}
+.lib-glint::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 38%, var(--glint) 50%, transparent 62%);
+  transform: translateX(-130%);
+  pointer-events: none;
+  animation: lib-glint var(--glint-period, 4.2s) ease-in-out infinite;
+  animation-delay: var(--glint-delay, 0.8s);
+}
+@keyframes lib-glint {
+  0%,
+  72% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+.lib-screens {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+.lib-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  pointer-events: auto;
+  overflow: auto;
+  animation: lib-fade 0.22s ease;
+}
+.lib-screen--veil {
+  background: var(--veil);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.lib-screen--clear {
+  pointer-events: none;
+}
+.lib-screen--clear > * {
+  pointer-events: auto;
+}
+@keyframes lib-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lib-card {
+  position: relative;
+  width: min(100%, 460px);
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  background-color: var(--panel-solid);
+  background-image: var(--tex-parchment-light, none);
+  background-size: 384px 384px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 4px var(--panel-solid),
+    inset 0 0 0 5px var(--ink-hair),
+    inset 0 0 40px var(--edge-soft),
+    0 14px 34px -14px var(--ink-shadow),
+    0 2px 0 var(--edge-hard);
+  animation: lib-card-in 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+.lib-card--wide {
+  width: min(100%, 620px);
+}
+@keyframes lib-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lib-card__corner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  background-image: var(--tex-corner, none);
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+.lib-card__corner--tl {
+  left: -4px;
+  top: -4px;
+}
+.lib-card__corner--tr {
+  right: -4px;
+  top: -4px;
+  transform: rotate(90deg);
+}
+.lib-card__corner--br {
+  right: -4px;
+  bottom: -4px;
+  transform: rotate(180deg);
+}
+.lib-card__corner--bl {
+  left: -4px;
+  bottom: -4px;
+  transform: rotate(270deg);
+}
+
+.lib-title {
+  margin: 0;
+  font-family: 'Ruslan Display', 'Rubik', serif;
+  font-weight: 400;
+  font-size: clamp(30px, 8.4vw, 58px);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.lib-title__initial {
+  /* Золотой инициал названия. */
+  display: inline-block;
+  color: transparent;
+  background-color: var(--gold);
+  background-image: var(--tex-gold, linear-gradient(135deg, var(--gold-light), var(--gold) 50%, var(--gold-dark)));
+  background-size: 160px 160px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1.2px var(--ink);
+  font-size: 1.5em;
+  line-height: 0.8;
+  vertical-align: -0.12em;
+  margin-right: 0.02em;
+  filter: drop-shadow(0 2px 0 var(--ink-shadow));
+}
+.lib-subtitle {
+  margin: 0;
+  /* Фрактура — только для слов-звуков и подзаголовка, в обычном регистре (7.7.6). */
+  font-family: 'UnifrakturMaguntia', 'Rubik', serif;
+  font-size: clamp(22px, 5.6vw, 34px);
+  line-height: 1.05;
+  color: var(--rubric);
+  text-transform: none;
+}
+.lib-heading {
+  margin: 0;
+  font-family: 'Ruslan Display', 'Rubik', serif;
+  font-weight: 400;
+  font-size: clamp(22px, 5.4vw, 32px);
+  line-height: 1.05;
+  color: var(--ink);
+}
+.lib-rubric {
+  margin: 0;
+  color: var(--rubric);
+  font-weight: 600;
+  font-size: 17px;
+}
+.lib-rubric::first-letter {
+  font-size: 1.25em;
+}
+.lib-text {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.lib-note {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-faded);
+}
+.lib-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.lib-rule {
+  width: 72%;
+  height: 12px;
+  background-image: var(--tex-rule, none);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.9;
+}
+
+/* Меню: разворот кодекса поверх живой заставки. */
+.lib-menu {
+  justify-content: center;
+  gap: 10px;
+}
+.lib-menu__plate {
+  position: relative;
+  width: min(100%, 520px);
+  padding: 26px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  background-color: var(--panel-solid);
+  background-image: var(--tex-parchment-light, none);
+  background-size: 384px 384px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 5px var(--panel-solid),
+    inset 0 0 0 6.5px var(--gold),
+    inset 0 0 0 7.5px var(--ink),
+    inset 0 0 60px var(--edge-soft),
+    0 18px 44px -16px var(--ink-shadow);
+  animation: lib-card-in 0.4s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+/* Выбор уровня: миниатюры-карточки со звёздами. */
+.lib-levels {
+  width: min(100%, 640px);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+.lib-level {
+  position: relative;
+  padding: 10px 8px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  color: var(--ink);
+  text-align: center;
+  background-color: var(--tablet);
+  background-image: linear-gradient(180deg, var(--tablet-hi), var(--tablet) 60%, var(--tablet-lo));
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.lib-level:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+.lib-level__num {
+  font-family: 'Ruslan Display', 'Rubik', serif;
+  font-size: 30px;
+  line-height: 1;
+}
+.lib-level__mini {
+  width: 78px;
+  height: 58px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 0 0 2px var(--gold), 0 0 0 3px var(--ink);
+  margin: 4px 0 5px;
+}
+.lib-level__traits {
+  font-size: 11.5px;
+  line-height: 1.2;
+  color: var(--ink-faded);
+  min-height: 2.4em;
+}
+.lib-level:disabled {
+  /* Закрытые уровни затемнены (11.5.2). */
+  cursor: default;
+  filter: grayscale(0.85) brightness(0.72);
+  box-shadow: 0 2px 0 var(--ink-faded);
+}
+.lib-stars {
+  display: inline-flex;
+  gap: 2px;
+}
+.lib-star {
+  width: var(--star, 20px);
+  height: var(--star, 20px);
+  background-image: var(--icon-star, none);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.lib-star.is-off {
+  background-image: var(--icon-star-off, none);
+  opacity: 0.55;
+}
+.lib-star.is-new {
+  animation: lib-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/* Интро раунда. */
+.lib-intro {
+  justify-content: flex-start;
+  padding-top: 12%;
+  cursor: pointer;
+}
+.lib-intro__card {
+  max-width: min(92%, 440px);
+  padding: 12px 18px;
+  text-align: center;
+  background-color: var(--panel-solid);
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 3px var(--panel-solid),
+    inset 0 0 0 4px var(--ink-hair),
+    0 10px 26px -12px var(--ink-shadow);
+  animation: lib-card-in 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+/* Итоги: три карточки по очереди. */
+.lib-results {
+  justify-content: center;
+  gap: 10px;
+}
+.lib-results__cards {
+  width: min(100%, 980px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+}
+.lib-result-card {
+  flex: 1 1 250px;
+  max-width: 320px;
+  min-width: 0;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  background-color: var(--panel-solid);
+  background-image: var(--tex-parchment-light, none);
+  background-size: 384px 384px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 3px var(--panel-solid),
+    inset 0 0 0 4px var(--ink-hair),
+    0 12px 28px -14px var(--ink-shadow);
+  opacity: 0;
+  transform: translateY(16px) rotate(var(--tilt, 0deg));
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.lib-result-card.is-in {
+  opacity: 1;
+  transform: rotate(var(--tilt, 0deg));
+}
+.lib-result-card__shot {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  box-shadow: 0 0 0 2.5px var(--gold), 0 0 0 3.5px var(--ink);
+  background-color: var(--parchment-shade);
+}
+.lib-result-map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 74px;
+}
+.lib-result-map .lib-slot {
+  --slot: 66px;
+  margin: 0 -6px;
+}
+.lib-result-cards {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.lib-result-cards .lib-slot {
+  --slot: 44px;
+}
+.lib-stats {
+  width: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 12px;
+  font-size: 14px;
+  text-align: left;
+}
+.lib-stats dt {
+  color: var(--ink-faded);
+}
+.lib-stats dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.lib-result-card .lib-stars {
+  --star: 38px;
+  gap: 4px;
+}
+
+/* Настройки. */
+.lib-settings {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  text-align: left;
+}
+.lib-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 15px;
+}
+.lib-field__note {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  color: var(--ink-faded);
+}
+.lib-field input[type='range'] {
+  width: 150px;
+  accent-color: var(--rubric);
+}
+.lib-field input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--rubric);
+}
+.lib-field select {
+  font: inherit;
+  font-size: 15px;
+  padding: 4px 8px;
+  color: var(--ink);
+  background: var(--tablet);
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+}
+.lib-fieldset {
+  margin: 0;
+  padding: 8px 10px 9px;
+  border: 1px solid var(--ink-hair);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lib-fieldset legend {
+  padding: 0 6px;
+  color: var(--rubric);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+.lib-field.is-locked {
+  opacity: 0.45;
+}
+
+/* Обучение: пузырь героя (11.5.7). */
+.lib-bubble {
+  position: absolute;
+  z-index: 9;
+  max-width: min(300px, 78vw);
+  padding: 11px 14px 10px;
+  font-size: 15.5px;
+  line-height: 1.25;
+  text-align: left;
+  background-color: var(--panel-solid);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  box-shadow:
+    0 3px 0 var(--ink),
+    0 12px 26px -10px var(--ink-shadow);
+  pointer-events: auto;
+  animation: lib-card-in 0.25s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.lib-bubble::after {
+  content: '';
+  position: absolute;
+  left: var(--tail-x, 30px);
+  width: 14px;
+  height: 14px;
+  background: inherit;
+  border-right: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  transform: rotate(45deg);
+}
+.lib-bubble[data-tail='down']::after {
+  bottom: -8.5px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.lib-bubble[data-tail='up']::after {
+  top: -8.5px;
+  transform: rotate(225deg);
+}
+.lib-bubble__ok {
+  margin-top: 9px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Подсказка над героем: рубрика. */
+.lib-toast {
+  position: absolute;
+  z-index: 8;
+  padding: 3px 10px 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rubric);
+  white-space: nowrap;
+  background-color: var(--panel-solid);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 2px 0 var(--ink);
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  animation: lib-toast 1.6s ease forwards;
+}
+@keyframes lib-toast {
+  0% {
+    opacity: 0;
+    margin-top: 6px;
+  }
+  12%,
+  78% {
+    opacity: 1;
+    margin-top: 0;
+  }
+  100% {
+    opacity: 0;
+    margin-top: -6px;
+  }
+}
+
+/* Экран загрузки — пергаментная карточка «Lädt…» с фактом (7.3.6). */
+.lib-loading {
+  background-color: var(--parchment);
+  background-image: var(--tex-parchment, none);
+  background-size: 384px 384px;
+  z-index: 30;
+}
+.lib-loading__word {
+  margin: 0;
+  font-family: 'UnifrakturMaguntia', 'Rubik', serif;
+  font-size: 46px;
+  line-height: 1;
+  color: var(--ink);
+}
+.lib-loading__word::first-letter {
+  color: var(--rubric);
+}
+.lib-loading__bar {
+  width: 190px;
+  height: 7px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.lib-loading__fill {
+  width: 0%;
+  height: 100%;
+  background: var(--rubric);
+  transition: width 0.15s linear;
+}
+
+/* Отладочная панель (13.7): только dev-сборка. */
+.lib-debug {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 40;
+  max-width: 290px;
+  padding: 8px 10px;
+  font:
+    11.5px/1.35 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  color: var(--parchment);
+  background: var(--veil-strong);
+  border-radius: 6px;
+  pointer-events: auto;
+  white-space: pre-wrap;
+}
+.lib-debug button {
+  font: inherit;
+  margin: 2px 3px 0 0;
+  padding: 2px 6px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.lib-debug button.is-on {
+  background: var(--rubric);
+}
+
+.lib-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Плотные раскладки: маленькие телефоны. */
+.lib-root[data-tier='compact'] {
+  --q-pad: 9px;
+  --q-gap: 6px;
+  --q-head: 15.5px;
+  --q-initial: 36px;
+  --q-prompt-min: 40px;
+}
+.lib-root[data-tier='ultra'] {
+  --q-pad: 6px;
+  --q-gap: 4px;
+  --q-head: 14px;
+  --q-initial: 30px;
+  --q-prompt-min: 32px;
+  --q-opt-gap: 5px;
+  --q-opt-font: 17px;
+}
+.lib-root[data-tier='ultra'] .lib-q-prompt {
+  padding: 1px 6px 1px 2px;
+}
+.lib-root[data-tier='ultra'] .lib-q-initial {
+  margin: 2px 3px;
+}
+
+/* «Меньше движения» (9.1.5, 11.6.1): без блика, пульсаций и разворотов. */
+.lib-root[data-motion='reduced'] .lib-glint::after {
+  display: none;
+}
+.lib-root[data-motion='reduced'] *,
+.lib-root[data-motion='reduced'] *::before,
+.lib-root[data-motion='reduced'] *::after {
+  animation-duration: 0.001s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001s !important;
+}
