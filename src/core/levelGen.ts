@@ -49,7 +49,8 @@ function buildRoom(rng: Rng, level: LevelConfig): Draft {
     for (let x = 1; x < w - 1; x++) {
       // Столы двух библиотекарей стоят в дальних углах: проход прямо под столом не делаем,
       // чтобы библиотекарь не выходил «сквозь» конторку (см. DECISIONS.md).
-      if (level.librarians === 2 && y === balance.shelfRows[0] && (x === 1 || x === w - 2)) continue;
+      if (level.librarians === 2 && y === balance.shelfRows[0] && (x === 1 || x === w - 2))
+        continue;
       cols.push(x);
     }
     rng.shuffle(cols);
@@ -69,7 +70,14 @@ function pickDesks(draft: Draft, level: LevelConfig): Cell[] {
       { x: w - 2, y: 1 },
     ];
   }
-  const probe: Library = { w, h, tiles: draft.tiles, door: draft.door, start: draft.start, desks: [] };
+  const probe: Library = {
+    w,
+    h,
+    tiles: draft.tiles,
+    door: draft.door,
+    start: draft.start,
+    desks: [],
+  };
   const dist = distanceMap(probe, draft.start);
   // Самая далёкая по пути от старта клетка ряда 1 (раздел 5, пункт 3). Клетки прямо над
   // проходом не берём: стол у стены не должен стоять в проёме.
@@ -115,7 +123,11 @@ const ORDERS: readonly (readonly [number, number, number])[] = [
 ];
 
 /** Кратчайший обход «старт → все листы в лучшем порядке → дверь» (перебор 6 порядков). */
-export function tourLength(lib: Library, pages: readonly Cell[], mapOf: MapOf = mapCache(lib)): number {
+export function tourLength(
+  lib: Library,
+  pages: readonly Cell[],
+  mapOf: MapOf = mapCache(lib),
+): number {
   const fromStart = mapOf(lib.start);
   const at = (map: Int16Array, c: Cell): number => map[cellIndex(lib, c.x, c.y)] as number;
   let best = Infinity;
@@ -160,7 +172,12 @@ function placePages(rng: Rng, lib: Library, tourMin: number, tourMax: number): C
   return null;
 }
 
-function placeItems(rng: Rng, draft: Draft, level: LevelConfig, pages: readonly Cell[]): Cell[] | null {
+function placeItems(
+  rng: Rng,
+  draft: Draft,
+  level: LevelConfig,
+  pages: readonly Cell[],
+): Cell[] | null {
   const { w, h } = balance.grid;
   const free: Cell[] = [];
   for (let y = 2; y < h - 1; y++) {
@@ -193,7 +210,14 @@ export function generateLevel(level: LevelConfig, seed: number): LevelLayout {
       attempts++;
       const draft = buildRoom(rng, level);
       const desks = pickDesks(draft, level);
-      const base: Library = { w, h, tiles: draft.tiles, door: draft.door, start: draft.start, desks };
+      const base: Library = {
+        w,
+        h,
+        tiles: draft.tiles,
+        door: draft.door,
+        start: draft.start,
+        desks,
+      };
       if (!allFloorConnected(base)) continue;
       const pages = placePages(rng, base, tourMin, tourMax);
       if (!pages) continue;

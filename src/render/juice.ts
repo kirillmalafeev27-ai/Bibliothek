@@ -95,7 +95,10 @@ export class Juice {
       if (old) this.drop(old.image);
     }
     const k = this.art.scale * WORD_SCALE[size];
-    const image = this.scene.add.image(0, 0, key).setOrigin(0.5, 1).setDepth(DEPTH.effects + 50);
+    const image = this.scene.add
+      .image(0, 0, key)
+      .setOrigin(0.5, 1)
+      .setDepth(DEPTH.effects + 50);
     this.temp.add(image);
     const w = image.width * k;
     const h = image.height * k;
@@ -105,7 +108,9 @@ export class Juice {
     let y = Math.max(h + pad, at.y - CELL * 0.06);
     for (let guard = 0; guard < 4; guard++) {
       const clash = this.banners.find(
-        (b) => Math.abs(b.image.x - x) < (b.image.displayWidth + w) / 2 && Math.abs(b.image.y - y) < h * 0.9,
+        (b) =>
+          Math.abs(b.image.x - x) < (b.image.displayWidth + w) / 2 &&
+          Math.abs(b.image.y - y) < h * 0.9,
       );
       if (!clash) break;
       y = clash.image.y - h * 0.92;
@@ -124,15 +129,31 @@ export class Juice {
     };
     if (this.env.reduced()) {
       image.setScale(k);
-      this.scene.tweens.add({ targets: image, alpha: 0, delay: holdMs, duration: 120, onComplete: done });
+      this.scene.tweens.add({
+        targets: image,
+        alpha: 0,
+        delay: holdMs,
+        duration: 120,
+        onComplete: done,
+      });
       return;
     }
     // Лента разворачивается, как свиток.
-    image.setScale(k * 0.08, k * 0.7).setAlpha(0.2).setAngle(Phaser.Math.Between(-4, 4));
+    image
+      .setScale(k * 0.08, k * 0.7)
+      .setAlpha(0.2)
+      .setAngle(Phaser.Math.Between(-4, 4));
     this.scene.tweens.chain({
       targets: image,
       tweens: [
-        { scaleX: k * 1.06, scaleY: k * 1.04, alpha: 1, y: y - CELL * 0.06, duration: 150, ease: 'Cubic.easeOut' },
+        {
+          scaleX: k * 1.06,
+          scaleY: k * 1.04,
+          alpha: 1,
+          y: y - CELL * 0.06,
+          duration: 150,
+          ease: 'Cubic.easeOut',
+        },
         { scaleX: k, scaleY: k, duration: 90, ease: 'Sine.easeInOut' },
         { y: y - CELL * 0.14, duration: holdMs, ease: 'Sine.easeOut' },
         { alpha: 0, y: y - CELL * 0.24, scaleX: k * 0.92, duration: 190, ease: 'Cubic.easeIn' },
@@ -166,7 +187,14 @@ export class Juice {
     from: Point,
     to: Point,
     ms: number,
-    opts: { arc?: number; spin?: number; scaleTo?: number; depth?: number; onDone?: () => void; ease?: string } = {},
+    opts: {
+      arc?: number;
+      spin?: number;
+      scaleTo?: number;
+      depth?: number;
+      onDone?: () => void;
+      ease?: string;
+    } = {},
   ): Phaser.GameObjects.Image {
     const image = this.sprite(spec, from.x, from.y, opts.depth ?? DEPTH.effects + 30);
     const k = this.art.scale;
@@ -179,7 +207,10 @@ export class Juice {
       ease: opts.ease ?? 'Sine.easeInOut',
       onUpdate: () => {
         const t = state.t;
-        image.setPosition(from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t - Math.sin(t * Math.PI) * arc);
+        image.setPosition(
+          from.x + (to.x - from.x) * t,
+          from.y + (to.y - from.y) * t - Math.sin(t * Math.PI) * arc,
+        );
         image.setRotation((opts.spin ?? 0) * t);
         if (opts.scaleTo !== undefined) image.setScale(k * (1 + (opts.scaleTo - 1) * t));
       },
@@ -196,7 +227,13 @@ export class Juice {
     const image = this.sprite(TEX.inkStar, at.x, at.y, DEPTH.effects + 20);
     const k = this.art.scale;
     if (this.env.reduced()) {
-      this.scene.tweens.add({ targets: image, alpha: 0, delay: 260, duration: 100, onComplete: () => this.drop(image) });
+      this.scene.tweens.add({
+        targets: image,
+        alpha: 0,
+        delay: 260,
+        duration: 100,
+        onComplete: () => this.drop(image),
+      });
       return;
     }
     image.setScale(k * 0.2).setAngle(-30);
@@ -208,7 +245,13 @@ export class Juice {
       duration: 190,
       ease: 'Back.easeOut',
       onComplete: () => {
-        this.scene.tweens.add({ targets: image, alpha: 0, y: at.y - CELL * 0.34, duration: 170, onComplete: () => this.drop(image) });
+        this.scene.tweens.add({
+          targets: image,
+          alpha: 0,
+          y: at.y - CELL * 0.34,
+          duration: 170,
+          onComplete: () => this.drop(image),
+        });
       },
     });
   }

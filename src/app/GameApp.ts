@@ -11,7 +11,7 @@ import { levelMiniature } from '../art/miniature';
 import type { ArtProvider } from '../art/ArtFactory';
 import { grayProvider } from '../art/recipes/gray';
 import type { GameAudio } from '../audio/types';
-import { NullAudio } from '../audio/types';
+import { GameAudioEngine } from '../audio/GameAudioEngine';
 import { balance } from '../config/balance';
 import type { LevelConfig } from '../config/levels';
 import { LEVEL_COUNT, levelById, levels } from '../config/levels';
@@ -158,7 +158,7 @@ export class GameApp {
     this.progress = new Progress(store);
     this.pace = new Pace(storage, balance.pace);
     this.quality = new Quality(balance.perf, this.settings.data.quality, this.settings.data.motion);
-    this.audio = options.audio ?? new NullAudio();
+    this.audio = options.audio ?? new GameAudioEngine();
     this.provider = options.art ?? grayProvider;
 
     this.root = el('div', 'lib-root');
@@ -194,7 +194,11 @@ export class GameApp {
     this.debug = options.dev ? new DebugPanel(this.root, (op) => this.debugOp(op)) : null;
     container.append(this.root);
     this.applyMotion();
-    this.audio.setSettings({ on: this.settings.data.sound, sfx: this.settings.data.sfx, ambient: this.settings.data.ambient });
+    this.audio.setSettings({
+      on: this.settings.data.sound,
+      sfx: this.settings.data.sfx,
+      ambient: this.settings.data.ambient,
+    });
     this.cleanups.push(this.settings.onChange(() => this.onSettingsChanged()));
     this.cleanups.push(this.quality.onChange(() => this.applyMotion()));
 
@@ -229,7 +233,8 @@ export class GameApp {
       sound: (name, at) => this.playSound(name, at ?? null),
       onBootProgress: (done, total) => loading.setProgress(0.15 + 0.85 * (done / total)),
       onBootDone: (ms) => {
-        if (ms > balance.perf.textureBudgetMs) console.warn(`Генерация текстур: ${Math.round(ms)} мс`);
+        if (ms > balance.perf.textureBudgetMs)
+          console.warn(`Генерация текстур: ${Math.round(ms)} мс`);
         (window as unknown as { __libGenMs?: number }).__libGenMs = ms;
       },
       onSceneReady: () => this.onSceneReady(),
@@ -254,7 +259,12 @@ export class GameApp {
       },
       input: { keyboard: false, mouse: false, touch: false, gamepad: false },
       audio: { noAudio: true },
-      render: { antialias: true, antialiasGL: true, roundPixels: false, preserveDrawingBuffer: false },
+      render: {
+        antialias: true,
+        antialiasGL: true,
+        roundPixels: false,
+        preserveDrawingBuffer: false,
+      },
       scene: [BootScene, GameScene],
       callbacks: {
         preBoot: (game) => {
@@ -297,7 +307,10 @@ export class GameApp {
     const game = this.game;
     if (game?.isBooted) {
       const d = this.dpr();
-      game.scale.resize(Math.max(1, Math.round(layout.world.w * d)), Math.max(1, Math.round(layout.world.h * d)));
+      game.scale.resize(
+        Math.max(1, Math.round(layout.world.w * d)),
+        Math.max(1, Math.round(layout.world.h * d)),
+      );
       game.canvas.style.width = `${layout.world.w}px`;
       game.canvas.style.height = `${layout.world.h}px`;
       this.scene?.relayout(layout, d);
@@ -409,7 +422,11 @@ export class GameApp {
         mini: this.minis?.get(level.id) ?? '',
       };
     });
-    this.screens.levels(entries, (id) => this.startLevel(id), () => this.showMenu());
+    this.screens.levels(
+      entries,
+      (id) => this.startLevel(id),
+      () => this.showMenu(),
+    );
   }
 
   private showSettings(level: LevelConfig | null): void {
@@ -428,7 +445,8 @@ export class GameApp {
   private onSettingsChanged(): void {
     const s = this.settings.data;
     this.quality.setMotion(s.motion);
-    if (s.quality !== this.quality.level && !this.quality.wasAutoLowered) this.quality.setLevel(s.quality);
+    if (s.quality !== this.quality.level && !this.quality.wasAutoLowered)
+      this.quality.setLevel(s.quality);
     this.audio.setSettings({ on: s.sound, sfx: s.sfx, ambient: s.ambient });
   }
 
@@ -454,7 +472,10 @@ export class GameApp {
     this.endRound();
     const seed = randomSeed();
     // Темп фиксируется на старте раунда и внутри раунда не меняется (3.4).
-    const round = new Round(level, seed, { tMedSec: this.pace.tMedSec(), hintsOff: this.settings.data.hintsOff });
+    const round = new Round(level, seed, {
+      tMedSec: this.pace.tMedSec(),
+      hintsOff: this.settings.data.hintsOff,
+    });
     this.round = round;
     this.answerTimes = [];
     this.exitNear = false;
@@ -559,6 +580,8 @@ export class GameApp {
       timeMs: Math.round(timeSec * 1000),
     });
     const hasNext = st.level.id < LEVEL_COUNT;
+    // Подсчёт: листы складываются в карту — шелест (9.2).
+    if (won) this.playSound('rustle', null);
     this.screens.results(
       {
         won,
@@ -633,9 +656,14 @@ export class GameApp {
 
   private bindKeys(): void {
     const onKey = (e: KeyboardEvent): void => {
-      if (this.destroyed || e.repeat && e.code.startsWith('Digit')) return;
+      if (this.destroyed || (e.repeat && e.code.startsWith('Digit'))) return;
+      this.audio.unlock();
       const active = document.activeElement;
-      if (active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA')) return;
+      if (
+        active &&
+        (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA')
+      )
+        return;
       if (active && active !== document.body && !this.root.contains(active)) return;
       const code = e.code;
       if (code === 'Backquote' && this.debug) {
@@ -796,7 +824,7 @@ export class GameApp {
     const bw = t.el.offsetWidth || 260;
     const bh = t.el.offsetHeight || 90;
     const W = layout.world.w;
-    let x = Math.min(Math.max(8, head.x - bw * 0.3), W - bw - 8);
+    const x = Math.min(Math.max(8, head.x - bw * 0.3), W - bw - 8);
     let y = head.y - bh - 14;
     let tail = 'down';
     if (y < 6) {
@@ -807,7 +835,6 @@ export class GameApp {
     t.el.style.top = `${y}px`;
     t.el.dataset.tail = tail;
     t.el.style.setProperty('--tail-x', `${Math.min(bw - 24, Math.max(12, head.x - x - 7))}px`);
-    x = 0;
   }
 
   private closeTutorial(advance: boolean): void {
@@ -858,11 +885,22 @@ export class GameApp {
     }
     const round = this.round;
     if (this.phase === 'menu' && this.attract) this.attract.tick(dt);
-    if (round && (this.phase === 'play' || this.phase === 'outro') && !this.paused && !this.tutorial) {
+    if (
+      round &&
+      (this.phase === 'play' || this.phase === 'outro') &&
+      !this.paused &&
+      !this.tutorial
+    ) {
       if (this.phase === 'play' || round.state.status === 'catchScene') round.tick(dt);
       if (this.phase === 'play') this.panel.tick(dtMs);
     }
-    if (round && this.phase === 'play' && !this.paused && !this.tutorial && inEarshot(round.state)) {
+    if (
+      round &&
+      this.phase === 'play' &&
+      !this.paused &&
+      !this.tutorial &&
+      inEarshot(round.state)
+    ) {
       this.maybeTutorial('earshot');
     }
     if (this.tutorial) this.positionTutorial();
@@ -885,7 +923,8 @@ export class GameApp {
           : h.intent.kind === 'move'
             ? ru.headerStep
             : ru.headerIdle;
-      const quiet = st.hints.loudRing && st.status === 'playing' && inEarshot(st) ? ru.headerQuiet : null;
+      const quiet =
+        st.hints.loudRing && st.status === 'playing' && inEarshot(st) ? ru.headerQuiet : null;
       this.panel.setHeader(main, quiet);
       this.panel.setEnabled(!h.ready);
       this.panel.setFrozen(st.status === 'catchScene');
@@ -931,7 +970,10 @@ export class GameApp {
         round?.dispatch({ type: 'DEBUG', op: { kind: 'sniffNow' } });
         break;
       case 'cards':
-        round?.dispatch({ type: 'DEBUG', op: { kind: 'infiniteCards', on: !round.state.debug.infiniteCards } });
+        round?.dispatch({
+          type: 'DEBUG',
+          op: { kind: 'infiniteCards', on: !round.state.debug.infiniteCards },
+        });
         break;
       case 'hearing': {
         const url = new URL(window.location.href);
@@ -945,7 +987,12 @@ export class GameApp {
   }
 
   /** Для тестов и отладки: текущее состояние. */
-  inspect(): { phase: Phase; state: GameState | null; layout: Layout | null; scene: Record<string, unknown> | null } {
+  inspect(): {
+    phase: Phase;
+    state: GameState | null;
+    layout: Layout | null;
+    scene: Record<string, unknown> | null;
+  } {
     return {
       phase: this.phase,
       state: this.round?.state ?? null,

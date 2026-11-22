@@ -14,7 +14,15 @@ import { SHELF } from '../manifest';
 
 const G = palette.proto;
 
-function fillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string, line = 0): void {
+function fillRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+  line = 0,
+): void {
   ctx.fillStyle = color;
   ctx.fillRect(x, y, w, h);
   if (line > 0) {
@@ -24,7 +32,15 @@ function fillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
   }
 }
 
-function oval(ctx: CanvasRenderingContext2D, cx: number, cy: number, rx: number, ry: number, color: string, line = 0): void {
+function oval(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  color: string,
+  line = 0,
+): void {
   ctx.beginPath();
   ctx.ellipse(cx, cy, Math.max(0.5, rx), Math.max(0.5, ry), 0, 0, Math.PI * 2);
   ctx.fillStyle = color;
@@ -62,7 +78,12 @@ export const grayProvider: ArtProvider = {
     const lw = Math.max(1.5, ppc * 0.035);
     const key = spec.key;
     if (key.startsWith('page_')) {
-      poly(ctx, [w * 0.12, h * 0.1, w * 0.86, h * 0.16, w * 0.9, h * 0.88, w * 0.1, h * 0.84], G.item, lw);
+      poly(
+        ctx,
+        [w * 0.12, h * 0.1, w * 0.86, h * 0.16, w * 0.9, h * 0.88, w * 0.1, h * 0.84],
+        G.item,
+        lw,
+      );
       ctx.fillStyle = G.line;
       ctx.font = `700 ${h * 0.4}px sans-serif`;
       ctx.textAlign = 'center';
@@ -94,13 +115,44 @@ export const grayProvider: ArtProvider = {
       const tone = key.endsWith('ink') ? G.shelf : key.endsWith('gold') ? G.item : G.alarm;
       poly(
         ctx,
-        [w * 0.04, h * 0.3, w * 0.6, h * 0.3, w * 0.6, h * 0.08, w * 0.97, h * 0.42, w * 0.6, h * 0.86, w * 0.6, h * 0.58, w * 0.04, h * 0.58],
+        [
+          w * 0.04,
+          h * 0.3,
+          w * 0.6,
+          h * 0.3,
+          w * 0.6,
+          h * 0.08,
+          w * 0.97,
+          h * 0.42,
+          w * 0.6,
+          h * 0.86,
+          w * 0.6,
+          h * 0.58,
+          w * 0.04,
+          h * 0.58,
+        ],
         tone,
         lw,
       );
     } else if (key === 'slipper_print' || key === 'foot_ink' || key === 'foot_alarm') {
-      oval(ctx, w / 2, h / 2, w * 0.3, h * 0.38, key === 'foot_alarm' ? G.alarm : key === 'foot_ink' ? G.shelf : K.withAlpha(G.shelf, 0.6), key === 'foot_alarm' ? lw : 0);
-    } else if (key === 'route_dot' || key === 'aim_dot' || key === 'path_ink' || key === 'path_alarm' || key === 'ring_chip' || key === 'dust' || key === 'spark') {
+      oval(
+        ctx,
+        w / 2,
+        h / 2,
+        w * 0.3,
+        h * 0.38,
+        key === 'foot_alarm' ? G.alarm : key === 'foot_ink' ? G.shelf : K.withAlpha(G.shelf, 0.6),
+        key === 'foot_alarm' ? lw : 0,
+      );
+    } else if (
+      key === 'route_dot' ||
+      key === 'aim_dot' ||
+      key === 'path_ink' ||
+      key === 'path_alarm' ||
+      key === 'ring_chip' ||
+      key === 'dust' ||
+      key === 'spark'
+    ) {
       oval(ctx, w / 2, h / 2, w * 0.3, h * 0.3, key === 'path_alarm' ? G.alarm : G.shelf);
     } else if (key === 'route_end') {
       ctx.strokeStyle = G.line;
@@ -128,16 +180,37 @@ export const grayProvider: ArtProvider = {
         ctx.stroke();
       }
     } else if (key === 'lib_robe') {
-      poly(ctx, [w * 0.3, h * 0.04, w * 0.7, h * 0.04, w * 0.94, h * 0.98, w * 0.06, h * 0.98], G.librarian, lw);
+      poly(
+        ctx,
+        [w * 0.3, h * 0.04, w * 0.7, h * 0.04, w * 0.94, h * 0.98, w * 0.06, h * 0.98],
+        G.librarian,
+        lw,
+      );
     } else if (key === 'lib_hem') {
       fillRect(ctx, w * 0.06, h * 0.3, w * 0.88, h * 0.5, G.librarian);
     } else if (key.startsWith('lib_head')) {
-      oval(ctx, w * 0.44, h * 0.5, w * 0.34, h * 0.42, key.endsWith('angry') ? G.alarm : G.shelfTop, lw);
+      oval(
+        ctx,
+        w * 0.44,
+        h * 0.5,
+        w * 0.34,
+        h * 0.42,
+        key.endsWith('angry') ? G.alarm : G.shelfTop,
+        lw,
+      );
       oval(ctx, w * 0.84, h * 0.56, w * 0.14, h * 0.07, G.shelfTop, lw);
     } else if (key === 'lib_ear') {
       oval(ctx, w * 0.5, h * 0.42, w * 0.34, h * 0.38, G.item, lw);
     } else if (key === 'lib_arm' || key === 'hero_arm' || key === 'hero_leg') {
-      fillRect(ctx, w * 0.3, h * 0.06, w * 0.4, h * 0.88, key === 'lib_arm' ? G.librarian : G.hero, lw);
+      fillRect(
+        ctx,
+        w * 0.3,
+        h * 0.06,
+        w * 0.4,
+        h * 0.88,
+        key === 'lib_arm' ? G.librarian : G.hero,
+        lw,
+      );
     } else if (key === 'lib_keys' || key === 'lib_stamp') {
       fillRect(ctx, w * 0.2, h * 0.3, w * 0.6, h * 0.6, G.item, lw);
     } else if (key === 'lib_slipper') {
@@ -211,14 +284,26 @@ export const grayProvider: ArtProvider = {
     ctx.stroke();
   },
 
-  frame(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void {
+  frame(
+    ctx: CanvasRenderingContext2D,
+    cols: number,
+    rows: number,
+    thickness: number,
+    ppc: number,
+  ): void {
     const t = thickness * ppc;
     ctx.strokeStyle = G.line;
     ctx.lineWidth = Math.max(1, t * 0.5);
     ctx.strokeRect(t / 2, t / 2, cols * ppc + t, rows * ppc + t);
   },
 
-  frameMask(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void {
+  frameMask(
+    ctx: CanvasRenderingContext2D,
+    cols: number,
+    rows: number,
+    thickness: number,
+    ppc: number,
+  ): void {
     const t = thickness * ppc;
     ctx.strokeStyle = G.item;
     ctx.lineWidth = t;

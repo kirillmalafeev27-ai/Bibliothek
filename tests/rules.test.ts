@@ -25,7 +25,13 @@ import {
   wrong,
 } from './helpers';
 
-const FAR = { cell: { x: 1, y: 1 }, mode: 'walk' as const, timer: 1e6, stepDur: 1e6, target: { x: 7, y: 1 } };
+const FAR = {
+  cell: { x: 1, y: 1 },
+  mode: 'walk' as const,
+  timer: 1e6,
+  stepDur: 1e6,
+  target: { x: 7, y: 1 },
+};
 
 /** Библиотекарь в шаге от героя: следующим шагом войдёт на его клетку. */
 const closing = (over: Partial<Parameters<typeof makeState>[0]> = {}) =>
@@ -57,7 +63,12 @@ describe('поимка и билеты (2.3.8, 2.6.3, 2.6.4)', () => {
     const before = advance(s0, 0.4);
     expect(ofType(before.events, 'CAUGHT').length).toBe(0);
     const r = advance(before.state, 0.2);
-    expect(ofType(r.events, 'CAUGHT')[0]).toMatchObject({ m: 0, at: { x: 3, y: 3 }, cause: 'error', last: false });
+    expect(ofType(r.events, 'CAUGHT')[0]).toMatchObject({
+      m: 0,
+      at: { x: 3, y: 3 },
+      cause: 'error',
+      last: false,
+    });
     expect(r.state.stats.caught).toBe(1);
     expect(r.state.stats.caughtBy.error).toBe(1);
   });
@@ -203,13 +214,18 @@ describe('победа и звёзды (2.6.2, 2.6.5)', () => {
     const r = apply(s0, moveTo(4, 10), correct);
     expect(r.state.status).toBe('playing');
     expect(r.state.hero.cell).toEqual({ x: 4, y: 9 });
-    expect(ofType(r.events, 'DENIED')[0]).toMatchObject({ reason: 'blocked', cell: { x: 4, y: 10 } });
+    expect(ofType(r.events, 'DENIED')[0]).toMatchObject({
+      reason: 'blocked',
+      cell: { x: 4, y: 10 },
+    });
   });
 
   it('«Knapp!» — если библиотекарь был ближе 2 клеток', () => {
     const s0 = makeState({
       heroPages: [0, 1, 2],
-      librarians: [{ cell: { x: 5, y: 9 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 7, y: 9 } }],
+      librarians: [
+        { cell: { x: 5, y: 9 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 7, y: 9 } },
+      ],
     });
     const r = apply(s0, moveTo(4, 10), correct);
     expect(ofType(r.events, 'EXIT')).toEqual([{ type: 'EXIT', near: true }]);
@@ -269,7 +285,9 @@ describe('темп игрока (раздел 3)', () => {
     const near = makeState({
       level: 3,
       hero: { x: 4, y: 7 },
-      librarians: [{ cell: { x: 4, y: 5 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 1, y: 5 } }],
+      librarians: [
+        { cell: { x: 4, y: 5 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 1, y: 5 } },
+      ],
     });
     expect(inEarshot(near)).toBe(true);
     expect(ofType(apply(near, correct).events, 'ANSWERED')[0]).toMatchObject({ paced: false });
@@ -283,7 +301,9 @@ describe('темп игрока (раздел 3)', () => {
     const near = makeState({
       level: 3,
       hero: { x: 4, y: 7 },
-      librarians: [{ cell: { x: 4, y: 5 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 1, y: 5 } }],
+      librarians: [
+        { cell: { x: 4, y: 5 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 1, y: 5 } },
+      ],
     });
     const ticked = advance(near, 0.1).state;
     expect(ticked.questionTainted).toBe(true);
@@ -316,8 +336,10 @@ describe('детерминизм (13.3.5)', () => {
       if (roll < 0.3) push({ type: 'SET_INTENT', kind: 'move', cell: rng.pick(cells) });
       else if (roll < 0.36) push({ type: 'SET_INTENT', kind: 'throw', cell: rng.pick(cells) });
       else if (roll < 0.4) push({ type: 'SET_INTENT', kind: 'stay' });
-      else if (roll < 0.75) push({ type: 'ANSWER', correct: rng.chance(0.8), timeMs: 2000 + rng.int(4000) });
-      for (let k = rng.range(5, 80); k > 0; k--) push({ type: 'TICK', dt: 0.016 + rng.next() * 0.05 });
+      else if (roll < 0.75)
+        push({ type: 'ANSWER', correct: rng.chance(0.8), timeMs: 2000 + rng.int(4000) });
+      for (let k = rng.range(5, 80); k > 0; k--)
+        push({ type: 'TICK', dt: 0.016 + rng.next() * 0.05 });
     }
     return { state: s, log };
   }
@@ -359,7 +381,8 @@ describe('детерминизм (13.3.5)', () => {
     };
     for (const page of base.pages) {
       s = reduce(s, { type: 'SET_INTENT', kind: 'move', cell: page.cell }).state;
-      for (let i = 0; i < 40 && !sameCell(s.hero.cell, page.cell); i++) s = reduce(s, correct).state;
+      for (let i = 0; i < 40 && !sameCell(s.hero.cell, page.cell); i++)
+        s = reduce(s, correct).state;
       expect(s.hero.cell).toEqual(page.cell);
     }
     expect(s.hero.pages.length).toBe(3);

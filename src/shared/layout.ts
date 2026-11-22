@@ -68,9 +68,33 @@ interface TierMetrics {
 }
 
 const TIERS: readonly TierMetrics[] = [
-  { tier: 'normal', gap: 12, gearH: 50, gearW: 62, frame: 9, questionMinPortrait: 244, questionMinLandscape: 300 },
-  { tier: 'compact', gap: 10, gearH: 42, gearW: 54, frame: 6, questionMinPortrait: 212, questionMinLandscape: 280 },
-  { tier: 'ultra', gap: 6, gearH: 34, gearW: 46, frame: 3, questionMinPortrait: 186, questionMinLandscape: 250 },
+  {
+    tier: 'normal',
+    gap: 12,
+    gearH: 50,
+    gearW: 62,
+    frame: 9,
+    questionMinPortrait: 244,
+    questionMinLandscape: 300,
+  },
+  {
+    tier: 'compact',
+    gap: 10,
+    gearH: 42,
+    gearW: 54,
+    frame: 6,
+    questionMinPortrait: 212,
+    questionMinLandscape: 280,
+  },
+  {
+    tier: 'ultra',
+    gap: 6,
+    gearH: 34,
+    gearW: 46,
+    frame: 3,
+    questionMinPortrait: 186,
+    questionMinLandscape: 250,
+  },
 ];
 
 export interface Layout {
@@ -102,7 +126,13 @@ const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.m
 /** В портрете миниатюра подходит к краю экрана ближе, чем панели: клетке нужна вся ширина. */
 const PORTRAIT_WORLD_INSET = 5;
 
-function solvePortrait(w: number, h: number, safe: Insets, spec: LayoutSpec, t: TierMetrics): Layout {
+function solvePortrait(
+  w: number,
+  h: number,
+  safe: Insets,
+  spec: LayoutSpec,
+  t: TierMetrics,
+): Layout {
   const cols = spec.cols;
   const rows = spec.rows;
   const left = safe.left + t.gap;
@@ -158,7 +188,13 @@ function solvePortrait(w: number, h: number, safe: Insets, spec: LayoutSpec, t: 
   };
 }
 
-function solveLandscape(w: number, h: number, safe: Insets, spec: LayoutSpec, t: TierMetrics): Layout {
+function solveLandscape(
+  w: number,
+  h: number,
+  safe: Insets,
+  spec: LayoutSpec,
+  t: TierMetrics,
+): Layout {
   // В ландшафте библиотека повёрнута на 90°: клетки по ширине и высоте меняются местами.
   const cols = spec.rows;
   const rows = spec.cols;
@@ -170,9 +206,17 @@ function solveLandscape(w: number, h: number, safe: Insets, spec: LayoutSpec, t:
   const availH = h - top - bottom;
 
   const cellFor = (worldW: number): { cell: number; side: boolean } => {
-    const topCell = Math.min((worldW - 2 * t.frame) / cols, (availH - t.gearH - 2 * t.frame) / rows);
-    const sideCell = Math.min((worldW - t.gearW - 2 * t.frame) / cols, (availH - 2 * t.frame) / rows);
-    return sideCell > topCell + 0.5 ? { cell: sideCell, side: true } : { cell: topCell, side: false };
+    const topCell = Math.min(
+      (worldW - 2 * t.frame) / cols,
+      (availH - t.gearH - 2 * t.frame) / rows,
+    );
+    const sideCell = Math.min(
+      (worldW - t.gearW - 2 * t.frame) / cols,
+      (availH - 2 * t.frame) / rows,
+    );
+    return sideCell > topCell + 0.5
+      ? { cell: sideCell, side: true }
+      : { cell: topCell, side: false };
   };
 
   const qPref = clamp(w * spec.landscapeShare, spec.landscapeMin, spec.landscapeMax);
@@ -254,7 +298,9 @@ export function computeLayout(
   const landscape = isLandscape(w, h, spec);
   let best: Layout | null = null;
   for (const t of TIERS) {
-    const layout = landscape ? solveLandscape(w, h, safe, spec, t) : solvePortrait(w, h, safe, spec, t);
+    const layout = landscape
+      ? solveLandscape(w, h, safe, spec, t)
+      : solvePortrait(w, h, safe, spec, t);
     if (!best || layout.cell > best.cell) best = layout;
     if (layout.cell >= spec.cellMin) return layout;
   }

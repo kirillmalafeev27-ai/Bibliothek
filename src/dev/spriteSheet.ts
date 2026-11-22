@@ -19,7 +19,10 @@ function render(spec: TexSpec): HTMLCanvasElement {
 }
 
 /** Собирает фигурку из частей так же, как это делают виды (координаты в клетках от ступней). */
-function figure(parts: [TexSpec, number, number, number, number?][], scale: number): HTMLCanvasElement {
+function figure(
+  parts: [TexSpec, number, number, number, number?][],
+  scale: number,
+): HTMLCanvasElement {
   const W = 2.2 * PPC * scale;
   const H = 2.2 * PPC * scale;
   const c = K.makeCanvas(W, H);
@@ -50,7 +53,8 @@ export async function showSpriteSheet(root: HTMLElement): Promise<void> {
     const box = document.createElement('div');
     box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;';
     canvas.style.width = `${(canvas.width * scale) / 1}px`;
-    canvas.style.background = 'repeating-conic-gradient(#e6d6ae 0 25%, #efe2c0 0 50%) 0 0/16px 16px';
+    canvas.style.background =
+      'repeating-conic-gradient(#e6d6ae 0 25%, #efe2c0 0 50%) 0 0/16px 16px';
     const t = document.createElement('span');
     t.textContent = label;
     box.append(canvas, t);
@@ -131,7 +135,8 @@ export async function showSpriteSheet(root: HTMLElement): Promise<void> {
   const vshelf = K.makeCanvas(PPC, PPC * 3.25);
   manuscriptProvider.shelf(K.ctx2d(vshelf), 'v', 3, PPC, 6);
   add(vshelf, 'shelf v3');
-  for (const w of ['Wer da?', 'Ausweis, bitte!', 'Кто там?']) add(manuscriptProvider.word(w, PPC, w === 'Кто там?'), w);
+  for (const w of ['Wer da?', 'Ausweis, bitte!', 'Кто там?'])
+    add(manuscriptProvider.word(w, PPC, w === 'Кто там?'), w);
   root.append(wrap);
   (window as unknown as { __sheetReady?: boolean }).__sheetReady = true;
 }

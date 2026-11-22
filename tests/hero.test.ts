@@ -14,7 +14,13 @@ import {
 } from './helpers';
 
 /** Библиотекарь далеко и занят: в сценах про героя он не мешает. */
-const FAR = { cell: { x: 1, y: 1 }, mode: 'walk' as const, timer: 1e6, stepDur: 1e6, target: { x: 7, y: 1 } };
+const FAR = {
+  cell: { x: 1, y: 1 },
+  mode: 'walk' as const,
+  timer: 1e6,
+  stepDur: 1e6,
+  target: { x: 7, y: 1 },
+};
 
 describe('действия и намерение (2.2)', () => {
   it('каждый правильный ответ — один шаг на соседнюю клетку по маршруту', () => {
@@ -89,7 +95,9 @@ describe('действия и намерение (2.2)', () => {
 
   it('шагнуть на клетку библиотекаря нельзя: действие становится готовым', () => {
     const s0 = makeState({
-      librarians: [{ cell: { x: 4, y: 8 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 4, y: 7 } }],
+      librarians: [
+        { cell: { x: 4, y: 8 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 4, y: 7 } },
+      ],
     });
     const r = apply(s0, moveTo(4, 8), correct);
     expect(r.state.hero.cell).toEqual({ x: 4, y: 9 });
@@ -193,7 +201,14 @@ describe('действия и намерение (2.2)', () => {
 
 describe('листы и словари (2.2.1, 2.5, 2.6)', () => {
   it('лист подбирается сам, когда герой входит на клетку', () => {
-    const s0 = makeState({ librarians: [FAR], pages: [{ x: 4, y: 8 }, { x: 1, y: 5 }, { x: 7, y: 5 }] });
+    const s0 = makeState({
+      librarians: [FAR],
+      pages: [
+        { x: 4, y: 8 },
+        { x: 1, y: 5 },
+        { x: 7, y: 5 },
+      ],
+    });
     const r = apply(s0, moveTo(4, 8), correct);
     expect(r.state.hero.pages).toEqual([0]);
     expect(r.state.pages.map((p) => p.id)).toEqual([1, 2]);
@@ -257,7 +272,9 @@ describe('листы и словари (2.2.1, 2.5, 2.6)', () => {
     expect(checkThrow(s0, { x: 4, y: 10 })).toBe('outOfRange'); // дверь
     expect(checkThrow(s0, { x: 4, y: 9 })).toBe('outOfRange'); // клетка героя
     expect(checkThrow(s0, { x: 2, y: 8 })).toBe('outOfRange'); // стеллаж
-    expect(checkThrow(makeState({ librarians: [FAR], heroBooks: 0 }), { x: 4, y: 5 })).toBe('noBooks');
+    expect(checkThrow(makeState({ librarians: [FAR], heroBooks: 0 }), { x: 4, y: 5 })).toBe(
+      'noBooks',
+    );
     for (const c of throwTargets(s0)) expect(checkThrow(s0, c)).toBe('ok');
     expect(throwTargets(s0).length).toBeGreaterThan(10);
 
@@ -272,7 +289,9 @@ describe('листы и словари (2.2.1, 2.5, 2.6)', () => {
     const s0 = makeState({
       hero: { x: 3, y: 3 },
       heroBooks: 1,
-      librarians: [{ cell: { x: 1, y: 3 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 1, y: 1 } }],
+      librarians: [
+        { cell: { x: 1, y: 3 }, mode: 'walk', timer: 1e6, stepDur: 1e6, target: { x: 1, y: 1 } },
+      ],
     });
     // Словарь за спину героя: библиотекарь побежит через его клетку — кармин.
     const through = throwPreview(s0, { x: 6, y: 3 });

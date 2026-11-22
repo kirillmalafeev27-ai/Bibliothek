@@ -147,7 +147,12 @@ export class LibrarianView {
 
   /** Область у ступней — она может оказаться за стеллажом. */
   footRect(): { x: number; y: number; w: number; h: number } {
-    return { x: this.pos.x - CELL * 0.3, y: this.pos.y - CELL * 0.1, w: CELL * 0.6, h: CELL * 0.18 };
+    return {
+      x: this.pos.x - CELL * 0.3,
+      y: this.pos.y - CELL * 0.1,
+      w: CELL * 0.6,
+      h: CELL * 0.18,
+    };
   }
 
   update(dt: number, state: GameState, m: Librarian, reduced: boolean): void {
@@ -177,7 +182,12 @@ export class LibrarianView {
     this.sniffLeft = Math.max(0, this.sniffLeft - dt);
     this.jerk = Math.max(0, this.jerk - dt * 2.4);
     this.sniff = approach(this.sniff, this.sniffLeft > 0 ? 1 : 0, dt, 0.12);
-    this.angry = approach(this.angry, Math.min(1, m.anger / 2 + (m.anger > 0 ? 0.25 : 0)), dt, 0.25);
+    this.angry = approach(
+      this.angry,
+      Math.min(1, m.anger / 2 + (m.anger > 0 ? 0.25 : 0)),
+      dt,
+      0.25,
+    );
 
     // Целевая поза по состоянию.
     let arm = 0.12;
@@ -217,11 +227,10 @@ export class LibrarianView {
     head -= this.jerk * 0.3;
 
     let bodyY = 0;
-    let stampDown = 0;
     if (this.script === 'stamp') {
       // Подшивает билет: штамп, ящик картотеки.
       const cycle = (this.scriptTime * 1.5) % 1;
-      stampDown = cycle < 0.5 ? smooth(cycle / 0.5) : 1 - smooth((cycle - 0.5) / 0.5);
+      const stampDown = cycle < 0.5 ? smooth(cycle / 0.5) : 1 - smooth((cycle - 0.5) / 0.5);
       arm = -0.5 + stampDown * 0.9;
       head = 0.2;
       lean = 0.1;
@@ -283,13 +292,19 @@ export class LibrarianView {
 
     const shoulderX = -0.05 + upperRot * 0.42;
     const shoulderY = -0.9 + bodyY - bob;
-    const armSwing = moving && !reduced && this.script === 'none' && m.mode === 'walk' ? Math.sin(this.gait) * 0.14 : 0;
+    const armSwing =
+      moving && !reduced && this.script === 'none' && m.mode === 'walk'
+        ? Math.sin(this.gait) * 0.14
+        : 0;
     this.arm.setPosition(shoulderX * CELL, shoulderY * CELL);
     this.arm.setRotation(this.armRot + armSwing);
     if (this.stamp.visible) {
       const len = TEX.libArm.h * 0.86;
       const a = this.armRot;
-      this.stamp.setPosition((shoulderX - Math.sin(a) * len) * CELL, (shoulderY + Math.cos(a) * len) * CELL);
+      this.stamp.setPosition(
+        (shoulderX - Math.sin(a) * len) * CELL,
+        (shoulderY + Math.cos(a) * len) * CELL,
+      );
       this.stamp.setRotation(a * 0.3);
     }
 

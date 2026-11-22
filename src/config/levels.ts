@@ -19,7 +19,13 @@ export interface HintSet {
 export type HintPreset = 'all' | 'ringStepCircle' | 'step' | 'none';
 
 export const hintPresets: Record<HintPreset, HintSet> = {
-  all: { librarianPath: true, loudRing: true, redStep: true, throwCircle: true, cautiousStep: true },
+  all: {
+    librarianPath: true,
+    loudRing: true,
+    redStep: true,
+    throwCircle: true,
+    cautiousStep: true,
+  },
   ringStepCircle: {
     librarianPath: false,
     loudRing: true,

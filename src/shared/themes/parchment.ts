@@ -78,7 +78,10 @@ function cornerTexture(size: number, seed: number): HTMLCanvasElement {
     true,
     6,
   );
-  K.goldShape(ctx, rng, tri, Math.max(1, s * 0.05), { cracks: s > 24 ? 3 : 1, ink: { pools: false } });
+  K.goldShape(ctx, rng, tri, Math.max(1, s * 0.05), {
+    cracks: s > 24 ? 3 : 1,
+    ink: { pools: false },
+  });
   if (s >= 24) {
     const curl = K.curlPath(s * 0.3, s * 0.3, s * 0.3, Math.PI * 0.25, 1, 1.1);
     K.nibStroke(ctx, curl, s * 0.02, s * 0.05, K.NIB_ANGLE, { taper: 0.12 });
@@ -87,7 +90,12 @@ function cornerTexture(size: number, seed: number): HTMLCanvasElement {
 }
 
 /** Полоса лозы для края страницы: бесшовная по длине. */
-function vineStrip(length: number, thickness: number, seed: number, colors: ThemeColors): HTMLCanvasElement {
+function vineStrip(
+  length: number,
+  thickness: number,
+  seed: number,
+  colors: ThemeColors,
+): HTMLCanvasElement {
   const scale = 2;
   const canvas = K.makeCanvas(length * scale, thickness * scale);
   const ctx = K.ctx2d(canvas);
@@ -145,10 +153,20 @@ function ruleTexture(colors: ThemeColors): HTMLCanvasElement {
       10,
     );
     K.nibStroke(ctx, pts, 0.8, 2.6, K.NIB_ANGLE, { color: colors.inkFaded, taper: 0.3 });
-    const curl = K.curlPath(w / 2 + dir * 232, mid, 8, dir > 0 ? 0 : Math.PI, dir > 0 ? -1 : 1, 1.1);
+    const curl = K.curlPath(
+      w / 2 + dir * 232,
+      mid,
+      8,
+      dir > 0 ? 0 : Math.PI,
+      dir > 0 ? -1 : 1,
+      1.1,
+    );
     K.nibStroke(ctx, curl, 0.6, 1.6, K.NIB_ANGLE, { color: colors.inkFaded, taper: 0.12 });
   }
-  K.goldShape(ctx, rng, K.starPath(w / 2, mid, 9, 4, 0.5), 1.6, { cracks: 1, ink: { pools: false } });
+  K.goldShape(ctx, rng, K.starPath(w / 2, mid, 9, 4, 0.5), 1.6, {
+    cracks: 1,
+    ink: { pools: false },
+  });
   return canvas;
 }
 
@@ -183,7 +201,12 @@ export function applyParchmentTextures(root: HTMLElement, colors: ThemeColors, s
     K.ctx2d(initial),
     K.mulberry32(seed + 5),
     { x: 0, y: 0, w: 96, h: 96 },
-    { a: colors.blue, b: colors.blueDeep, line: K.withAlpha(colors.gold.base, 0.85), dot: colors.gold.light },
+    {
+      a: colors.blue,
+      b: colors.blueDeep,
+      line: K.withAlpha(colors.gold.base, 0.85),
+      dot: colors.gold.light,
+    },
     'lozenge',
     24,
   );

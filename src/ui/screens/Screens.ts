@@ -26,7 +26,8 @@ export function button(text: string, cls = '', onClick?: () => void): HTMLButton
 }
 
 function corners(card: HTMLElement): void {
-  for (const c of ['tl', 'tr', 'br', 'bl']) card.append(el('span', `lib-card__corner lib-card__corner--${c}`));
+  for (const c of ['tl', 'tr', 'br', 'bl'])
+    card.append(el('span', `lib-card__corner lib-card__corner--${c}`));
 }
 
 function stars(count: number, total = 3, animate = false): HTMLElement {
@@ -34,7 +35,10 @@ function stars(count: number, total = 3, animate = false): HTMLElement {
   box.setAttribute('role', 'img');
   box.setAttribute('aria-label', ru.starsOf(count));
   for (let i = 0; i < total; i++) {
-    const s = el('span', `lib-star${i < count ? '' : ' is-off'}${animate && i < count ? ' is-new' : ''}`);
+    const s = el(
+      'span',
+      `lib-star${i < count ? '' : ' is-off'}${animate && i < count ? ' is-new' : ''}`,
+    );
     if (animate) s.style.animationDelay = `${0.25 + i * 0.28}s`;
     box.append(s);
   }
@@ -132,7 +136,11 @@ export class Screens {
     this.current = node;
     this.el.append(node);
     // Фокус — на первую кнопку: всем можно управлять с клавиатуры (11.6.3).
-    queueMicrotask(() => node.querySelector<HTMLElement>('[data-autofocus], button:not(:disabled)')?.focus({ preventScroll: true }));
+    queueMicrotask(() =>
+      node
+        .querySelector<HTMLElement>('[data-autofocus], button:not(:disabled)')
+        ?.focus({ preventScroll: true }),
+    );
     return node;
   }
 
@@ -142,7 +150,9 @@ export class Screens {
     this.current = this.stack.pop() ?? null;
     if (this.current) {
       this.current.style.display = '';
-      this.current.querySelector<HTMLElement>('button:not(:disabled)')?.focus({ preventScroll: true });
+      this.current
+        .querySelector<HTMLElement>('button:not(:disabled)')
+        ?.focus({ preventScroll: true });
     }
   }
 
@@ -170,7 +180,13 @@ export class Screens {
     const bar = el('div', 'lib-loading__bar');
     const fill = el('div', 'lib-loading__fill');
     bar.append(fill);
-    card.append(word, el('div', 'lib-rule'), el('p', 'lib-text', tip), bar, el('p', 'lib-note', ru.loadingNote));
+    card.append(
+      word,
+      el('div', 'lib-rule'),
+      el('p', 'lib-text', tip),
+      bar,
+      el('p', 'lib-note', ru.loadingNote),
+    );
     screen.append(card);
     this.show(screen, 'loading');
     return {
@@ -226,7 +242,10 @@ export class Screens {
         ru.levelTraits.cards(e.level.cards),
         ru.levelTraits.hints[e.level.hintPreset],
       ].join(' · ');
-      b.setAttribute('aria-label', `${name}. ${traits}. ${e.unlocked ? (e.played ? ru.bestStars(e.stars) : ru.notPlayed) : ru.levelLocked}`);
+      b.setAttribute(
+        'aria-label',
+        `${name}. ${traits}. ${e.unlocked ? (e.played ? ru.bestStars(e.stars) : ru.notPlayed) : ru.levelLocked}`,
+      );
       const num = el('span', 'lib-level__num', ru.levelShort(e.level.id));
       const mini = el('span', 'lib-level__mini');
       mini.style.backgroundImage = `url(${e.mini})`;
@@ -234,7 +253,12 @@ export class Screens {
       if (e.unlocked) b.addEventListener('click', () => onPick(e.level.id));
       grid.append(b);
     }
-    card.append(el('h2', 'lib-heading', ru.chooseLevel), el('div', 'lib-rule'), grid, button(ru.back, 'lib-btn--small', onBack));
+    card.append(
+      el('h2', 'lib-heading', ru.chooseLevel),
+      el('div', 'lib-rule'),
+      grid,
+      button(ru.back, 'lib-btn--small', onBack),
+    );
     screen.append(card);
     this.show(screen, 'levels');
   }
@@ -274,7 +298,10 @@ export class Screens {
     const resume = button(ru.resume, 'lib-btn--gold lib-glint', h.onResume);
     resume.dataset.autofocus = '';
     const row = el('div', 'lib-row');
-    row.append(button(ru.restart, 'lib-btn--small', h.onRestart), button(ru.settings, 'lib-btn--small', h.onSettings));
+    row.append(
+      button(ru.restart, 'lib-btn--small', h.onRestart),
+      button(ru.settings, 'lib-btn--small', h.onSettings),
+    );
     card.append(
       el('h2', 'lib-heading', ru.paused),
       el('div', 'lib-rule'),
@@ -291,7 +318,11 @@ export class Screens {
 
   results(d: ResultData, h: ResultHandlers, reduced: boolean): void {
     const screen = el('div', 'lib-screen lib-screen--veil lib-results');
-    const heading = el('h2', 'lib-heading', d.won ? (d.near ? ru.resultWonClose : ru.resultWon) : ru.resultLost);
+    const heading = el(
+      'h2',
+      'lib-heading',
+      d.won ? (d.near ? ru.resultWonClose : ru.resultWon) : ru.resultLost,
+    );
     const cards = el('div', 'lib-results__cards');
 
     // Карточка 1: снимок кадра.
@@ -307,7 +338,10 @@ export class Screens {
     c2.style.setProperty('--tilt', '0.8deg');
     const map = el('div', 'lib-result-map');
     map.setAttribute('role', 'img');
-    map.setAttribute('aria-label', d.pages.length === 3 ? ru.resultMapDone : ru.resultMapPart(d.pages.length));
+    map.setAttribute(
+      'aria-label',
+      d.pages.length === 3 ? ru.resultMapDone : ru.resultMapPart(d.pages.length),
+    );
     for (let i = 0; i < 3; i++) {
       const s = el('span', `lib-slot lib-slot--page${d.pages.includes(i) ? '' : ' is-empty'}`);
       s.style.backgroundImage = `var(--icon-page-${i})`;
@@ -322,7 +356,11 @@ export class Screens {
     c2.append(
       el('p', 'lib-rubric', ru.resultCardMap),
       map,
-      el('p', 'lib-note', d.pages.length === 3 ? ru.resultMapDone : ru.resultMapPart(d.pages.length)),
+      el(
+        'p',
+        'lib-note',
+        d.pages.length === 3 ? ru.resultMapDone : ru.resultMapPart(d.pages.length),
+      ),
       ticketRow,
       el('p', 'lib-note', ru.resultCardsLeft(d.cardsLeft)),
     );
@@ -343,14 +381,25 @@ export class Screens {
     if (d.bestSec !== null) row(d.newRecord ? ru.statBestNew : ru.statBest, fmtTime(d.bestSec));
     const labels = el('div', 'lib-note');
     labels.textContent = ru.starLabels.slice(0, Math.max(1, d.stars)).join(' · ');
-    c3.append(el('p', 'lib-rubric', ru.resultCardStats), stars(d.stars, 3, true), d.won ? labels : el('span'), dl);
+    c3.append(
+      el('p', 'lib-rubric', ru.resultCardStats),
+      stars(d.stars, 3, true),
+      d.won ? labels : el('span'),
+      dl,
+    );
 
     cards.append(c1, c2, c3);
     const buttons = el('div', 'lib-row');
     const again = button(ru.again, 'lib-btn--gold lib-glint', h.onAgain);
     again.dataset.autofocus = '';
     buttons.append(again);
-    buttons.append(button(d.won && d.hasNext ? ru.next : ru.toMenu, '', d.won && d.hasNext ? h.onNext : h.onMenu));
+    buttons.append(
+      button(
+        d.won && d.hasNext ? ru.next : ru.toMenu,
+        '',
+        d.won && d.hasNext ? h.onNext : h.onMenu,
+      ),
+    );
     screen.append(heading, cards, buttons);
     this.show(screen, 'results');
     // Три карточки появляются по очереди; кнопки доступны сразу (2.6.7).
@@ -362,13 +411,24 @@ export class Screens {
 
   // ─────────────── настройки ───────────────
 
-  settings(s: SettingsData, level: LevelConfig | null, h: SettingsHandlers, autoLowered: boolean): void {
+  settings(
+    s: SettingsData,
+    level: LevelConfig | null,
+    h: SettingsHandlers,
+    autoLowered: boolean,
+  ): void {
     const screen = el('div', 'lib-screen lib-screen--veil');
     const card = el('div', 'lib-card');
     corners(card);
     const form = el('div', 'lib-settings');
 
-    const check = (label: string, value: boolean, onChange: (v: boolean) => void, note?: string, locked = false): HTMLElement => {
+    const check = (
+      label: string,
+      value: boolean,
+      onChange: (v: boolean) => void,
+      note?: string,
+      locked = false,
+    ): HTMLElement => {
       const f = el('label', `lib-field${locked ? ' is-locked' : ''}`);
       const input = el('input');
       input.type = 'checkbox';
@@ -391,7 +451,13 @@ export class Screens {
       f.append(el('span', '', label), input);
       return f;
     };
-    const select = <T extends string>(label: string, value: T, options: [T, string][], onChange: (v: T) => void, note?: string): HTMLElement => {
+    const select = <T extends string>(
+      label: string,
+      value: T,
+      options: [T, string][],
+      onChange: (v: T) => void,
+      note?: string,
+    ): HTMLElement => {
       const f = el('label', 'lib-field');
       const sel = el('select');
       for (const [v, t] of options) {
@@ -412,18 +478,38 @@ export class Screens {
     sound.append(range(ru.setSfx, s.sfx, (v) => h.onChange({ sfx: v })));
     sound.append(range(ru.setAmbient, s.ambient, (v) => h.onChange({ ambient: v })));
     sound.append(
-      select(ru.setSfxLang, s.sfxLang, [['de', ru.setSfxLangDe], ['ru', ru.setSfxLangRu]], (v) => h.onChange({ sfxLang: v })),
+      select(
+        ru.setSfxLang,
+        s.sfxLang,
+        [
+          ['de', ru.setSfxLangDe],
+          ['ru', ru.setSfxLangRu],
+        ],
+        (v) => h.onChange({ sfxLang: v }),
+      ),
     );
 
     const view = el('fieldset', 'lib-fieldset');
     view.append(el('legend', '', ru.setQuality));
-    const reducedNow = s.motion === 'reduced' || (s.motion === 'auto' && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    view.append(check(ru.setMotion, reducedNow, (v) => h.onChange({ motion: v ? 'reduced' : 'full' }), ru.setMotionNote));
+    const reducedNow =
+      s.motion === 'reduced' ||
+      (s.motion === 'auto' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    view.append(
+      check(
+        ru.setMotion,
+        reducedNow,
+        (v) => h.onChange({ motion: v ? 'reduced' : 'full' }),
+        ru.setMotionNote,
+      ),
+    );
     view.append(
       select(
         ru.setQuality,
         s.quality,
-        [['high', ru.setQualityHigh], ['low', ru.setQualityLow]],
+        [
+          ['high', ru.setQualityHigh],
+          ['low', ru.setQualityLow],
+        ],
         (v) => h.onChange({ quality: v, qualityAuto: false }),
         autoLowered || s.qualityAuto ? ru.setQualityAuto : undefined,
       ),

@@ -36,7 +36,12 @@ export class AimView {
   ) {
     const k = art.scale;
     const img = (spec: TexSpec, depth: number): Phaser.GameObjects.Image =>
-      scene.add.image(0, 0, spec.key).setOrigin(spec.ox, spec.oy).setScale(k).setDepth(depth).setVisible(false);
+      scene.add
+        .image(0, 0, spec.key)
+        .setOrigin(spec.ox, spec.oy)
+        .setScale(k)
+        .setDepth(depth)
+        .setVisible(false);
     this.gfx = scene.add.graphics().setDepth(DEPTH.top + 1);
     this.ok = img(TEX.aimOk, DEPTH.top + 4);
     this.bad = img(TEX.aimBad, DEPTH.top + 4);
@@ -52,7 +57,17 @@ export class AimView {
   }
 
   /** Штрих пунктира пером — дуга от a0 до a1. */
-  private dash(x: number, y: number, r: number, a0: number, a1: number, wMin: number, wMax: number, color: number, alpha: number): void {
+  private dash(
+    x: number,
+    y: number,
+    r: number,
+    a0: number,
+    a1: number,
+    wMin: number,
+    wMax: number,
+    color: number,
+    alpha: number,
+  ): void {
     const steps = 5;
     const outer: Phaser.Math.Vector2[] = [];
     const inner: Phaser.Math.Vector2[] = [];
@@ -71,7 +86,13 @@ export class AimView {
     this.gfx.fillPoints(outer.concat(inner.reverse()), true, true);
   }
 
-  update(dt: number, state: GameState, aiming: boolean, aimCell: Cell | null, reduced: boolean): void {
+  update(
+    dt: number,
+    state: GameState,
+    aiming: boolean,
+    aimCell: Cell | null,
+    reduced: boolean,
+  ): void {
     this.time += dt;
     this.rects.length = 0;
     const active = aiming && state.status === 'playing';
@@ -101,14 +122,27 @@ export class AimView {
       const ink = hex(palette.ink);
       for (let i = 0; i < DASHES; i++) {
         const a0 = spin + i * unit;
-        this.dash(hero.x, hero.y, r, a0, a0 + unit * 0.58, CELL * 0.022, CELL * 0.055, ink, 0.78 * this.show);
+        this.dash(
+          hero.x,
+          hero.y,
+          r,
+          a0,
+          a0 + unit * 0.58,
+          CELL * 0.022,
+          CELL * 0.055,
+          ink,
+          0.78 * this.show,
+        );
       }
       // Клетки, куда словарь долетит.
       for (const cell of throwTargets(state)) {
         const mark = this.marks[usedMarks++];
         if (!mark) break;
         const c = this.mapper.center(cell);
-        mark.setVisible(true).setPosition(c.x, c.y).setAlpha(0.42 * this.show);
+        mark
+          .setVisible(true)
+          .setPosition(c.x, c.y)
+          .setAlpha(0.42 * this.show);
       }
     }
     hide(this.marks, usedMarks);
@@ -122,7 +156,11 @@ export class AimView {
       const c = this.mapper.center(aimCell);
       const reticle = valid ? this.ok : this.bad;
       const pulse = reduced ? 1 : 1 + Math.sin(this.time * 6) * 0.04;
-      reticle.setVisible(true).setPosition(c.x, c.y).setScale(k * pulse).setAlpha(this.show);
+      reticle
+        .setVisible(true)
+        .setPosition(c.x, c.y)
+        .setScale(k * pulse)
+        .setAlpha(this.show);
       this.rects.push({ x: c.x - CELL * 0.3, y: c.y - CELL * 0.3, w: CELL * 0.6, h: CELL * 0.6 });
       if (valid && withCircle) {
         // Путь, которым библиотекарь побежит к выбранной клетке.
@@ -145,7 +183,12 @@ export class AimView {
                 .setPosition(x, y)
                 .setRotation(Math.atan2(cur.y - prev.y, cur.x - prev.x))
                 .setAlpha((p.danger ? 0.95 : 0.8) * this.show);
-              this.rects.push({ x: x - CELL * 0.1, y: y - CELL * 0.1, w: CELL * 0.2, h: CELL * 0.2 });
+              this.rects.push({
+                x: x - CELL * 0.1,
+                y: y - CELL * 0.1,
+                w: CELL * 0.2,
+                h: CELL * 0.2,
+              });
             }
             prev = cur;
           }

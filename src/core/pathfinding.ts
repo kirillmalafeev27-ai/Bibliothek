@@ -84,7 +84,12 @@ export function stepsBetween(lib: Library, a: Cell, b: Cell, opts?: PathOptions)
  * При равных путях выбирается первое подходящее направление в порядке DIRS.
  * Возвращает null, если пути нет; пустой массив, если from === to.
  */
-export function shortestPath(lib: Library, from: Cell, to: Cell, opts?: PathOptions): Cell[] | null {
+export function shortestPath(
+  lib: Library,
+  from: Cell,
+  to: Cell,
+  opts?: PathOptions,
+): Cell[] | null {
   if (sameCell(from, to)) return [];
   if (!passable(lib, to.x, to.y, opts)) return null;
   const toTarget = distanceMap(lib, to, opts);

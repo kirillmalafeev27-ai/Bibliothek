@@ -48,7 +48,10 @@ export interface QuestionPanelOptions {
 
 type Phase = 'idle' | 'note' | 'waiting' | 'asking' | 'feedback';
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className: string,
+): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   node.className = className;
   return node;

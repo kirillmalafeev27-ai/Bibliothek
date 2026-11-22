@@ -56,7 +56,8 @@ export class WorldView {
   private readonly flames: Phaser.GameObjects.Image[] = [];
   private doorLeaf: Phaser.GameObjects.Image | null = null;
   private doorLight: Phaser.GameObjects.Image | null = null;
-  private readonly twinkles: { image: Phaser.GameObjects.Image; phase: number; rate: number }[] = [];
+  private readonly twinkles: { image: Phaser.GameObjects.Image; phase: number; rate: number }[] =
+    [];
   private glint: Phaser.GameObjects.Image | null = null;
   private glintMask: Phaser.GameObjects.Image | null = null;
   private glintFilter: { needsUpdate: boolean } | null = null;
@@ -80,7 +81,11 @@ export class WorldView {
 
     // Слой 1: пол, скрипучие половицы и стены — одна запечённая текстура.
     art.room(ROOM_KEY, this.room, state.seed);
-    const roomImage = scene.add.image(0, 0, ROOM_KEY).setOrigin(0, 0).setScale(k).setDepth(DEPTH.floor);
+    const roomImage = scene.add
+      .image(0, 0, ROOM_KEY)
+      .setOrigin(0, 0)
+      .setScale(k)
+      .setDepth(DEPTH.floor);
     this.objects.push(roomImage);
 
     // Слой 3: ряды стеллажей, сортировка по y основания.
@@ -110,8 +115,14 @@ export class WorldView {
       // Свечи на концах некоторых рядов (7.5.4): декор, пламя светлое, лимонное.
       if (run.len >= 2 && rng() < 0.42) {
         const atStart = rng() < 0.5;
-        const cx = run.dir === 'h' ? (atStart ? run.x + 0.22 : run.x + run.len - 0.22) : run.x + 0.5;
-        const cy = run.dir === 'h' ? run.y + 0.16 : atStart ? run.y + 0.05 : run.y + run.len - SHELF.front - 0.12;
+        const cx =
+          run.dir === 'h' ? (atStart ? run.x + 0.22 : run.x + run.len - 0.22) : run.x + 0.5;
+        const cy =
+          run.dir === 'h'
+            ? run.y + 0.16
+            : atStart
+              ? run.y + 0.05
+              : run.y + run.len - SHELF.front - 0.12;
         this.addCandle(cx * CELL, cy * CELL, baseY + 1, rng);
       }
     }
@@ -155,7 +166,12 @@ export class WorldView {
 
   private addCandle(x: number, y: number, depth: number, rng: K.Rand): void {
     this.make(TEX.candle, x, y, DEPTH.objects + depth);
-    const flame = this.make(TEX.flame, x, y - TEX.candle.h * CELL * 0.86, DEPTH.objects + depth + 0.5);
+    const flame = this.make(
+      TEX.flame,
+      x,
+      y - TEX.candle.h * CELL * 0.86,
+      DEPTH.objects + depth + 0.5,
+    );
     flame.setData('phase', rng() * 10);
     this.flames.push(flame);
   }
@@ -228,7 +244,12 @@ export class WorldView {
     if (this.scene.game.renderer.type !== Phaser.WEBGL) return;
     try {
       const maskKey = this.art.frameMask(this.room.cols, this.room.rows, thickness);
-      const mask = new Phaser.GameObjects.Image(this.scene, -thickness * CELL, -thickness * CELL, maskKey);
+      const mask = new Phaser.GameObjects.Image(
+        this.scene,
+        -thickness * CELL,
+        -thickness * CELL,
+        maskKey,
+      );
       mask.setOrigin(0, 0).setScale(this.art.scale);
       const glint = this.scene.add
         .image(-9999, 0, TEX.glint.key)
@@ -340,7 +361,12 @@ export class WorldView {
       if (!item.image.visible) continue;
       const w = item.image.displayWidth;
       const h = item.image.displayHeight;
-      out.push({ x: item.image.x - w * item.image.originX, y: item.image.y - h * item.image.originY, w, h });
+      out.push({
+        x: item.image.x - w * item.image.originX,
+        y: item.image.y - h * item.image.originY,
+        w,
+        h,
+      });
     }
     return out;
   }
@@ -385,7 +411,10 @@ export class WorldView {
         flame.setScale(k);
         flame.setRotation(0);
       } else {
-        flame.setScale(k * (1 + Math.sin(t * 1.3) * 0.05), k * (1 + Math.sin(t) * 0.09 + Math.sin(t * 2.7) * 0.04));
+        flame.setScale(
+          k * (1 + Math.sin(t * 1.3) * 0.05),
+          k * (1 + Math.sin(t) * 0.09 + Math.sin(t * 2.7) * 0.04),
+        );
         flame.setRotation(Math.sin(t * 0.6) * 0.07);
       }
     }
@@ -410,7 +439,10 @@ export class WorldView {
     const H = this.room.rows * CELL;
     const t = this.glintT;
     glint.setVisible(true).setPosition(-CELL + (W + H * 0.6 + CELL * 2) * t - H * 0.3, H / 2);
-    glint.setScale(this.art.scale * 1.4, (this.art.scale * (H + CELL * 2)) / (TEX.glint.h * this.art.ppc) );
+    glint.setScale(
+      this.art.scale * 1.4,
+      (this.art.scale * (H + CELL * 2)) / (TEX.glint.h * this.art.ppc),
+    );
     if (t >= 1) {
       glint.setVisible(false);
       this.glintT = -1;

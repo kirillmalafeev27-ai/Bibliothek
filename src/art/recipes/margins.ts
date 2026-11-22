@@ -9,19 +9,72 @@ import { cellPen, dot, inkW, strokeCells } from './common';
 const D = palette.derived;
 const FADED = palette.inkFaded;
 
-function soft(ctx: CanvasRenderingContext2D, rng: K.Rand, path: K.Vec[], color: string, ppc: number): void {
-  K.shape(ctx, rng, path, color, inkW(ppc, 0.45), { rim: ppc * 0.012, mottle: 0.3, ink: { color: FADED, pools: false } });
+function soft(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  path: K.Vec[],
+  color: string,
+  ppc: number,
+): void {
+  K.shape(ctx, rng, path, color, inkW(ppc, 0.45), {
+    rim: ppc * 0.012,
+    mottle: 0.3,
+    ink: { color: FADED, pools: false },
+  });
 }
 
 /** Улитка: раковина-спираль, рожки. Испугавшись, прячет рожки. */
-export function drawSnail(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, startled: boolean): void {
+export function drawSnail(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  startled: boolean,
+): void {
   const body = startled
-    ? cellPen(ppc, [[0.2, 0.6], [0.3, 0.5], [0.62, 0.52], [0.66, 0.58], [0.6, 0.61], [0.22, 0.62]])
-    : cellPen(ppc, [[0.12, 0.6], [0.3, 0.5], [0.66, 0.5], [0.78, 0.42], [0.84, 0.48], [0.8, 0.58], [0.6, 0.61], [0.14, 0.62]]);
+    ? cellPen(ppc, [
+        [0.2, 0.6],
+        [0.3, 0.5],
+        [0.62, 0.52],
+        [0.66, 0.58],
+        [0.6, 0.61],
+        [0.22, 0.62],
+      ])
+    : cellPen(ppc, [
+        [0.12, 0.6],
+        [0.3, 0.5],
+        [0.66, 0.5],
+        [0.78, 0.42],
+        [0.84, 0.48],
+        [0.8, 0.58],
+        [0.6, 0.61],
+        [0.14, 0.62],
+      ]);
   soft(ctx, rng, body, D.hare, ppc);
   if (!startled) {
-    strokeCells(ctx, ppc, [[0.78, 0.44], [0.8, 0.3], [0.82, 0.24]], ppc * 0.008, ppc * 0.018, FADED);
-    strokeCells(ctx, ppc, [[0.8, 0.45], [0.88, 0.33], [0.9, 0.28]], ppc * 0.008, ppc * 0.018, FADED);
+    strokeCells(
+      ctx,
+      ppc,
+      [
+        [0.78, 0.44],
+        [0.8, 0.3],
+        [0.82, 0.24],
+      ],
+      ppc * 0.008,
+      ppc * 0.018,
+      FADED,
+    );
+    strokeCells(
+      ctx,
+      ppc,
+      [
+        [0.8, 0.45],
+        [0.88, 0.33],
+        [0.9, 0.28],
+      ],
+      ppc * 0.008,
+      ppc * 0.018,
+      FADED,
+    );
     dot(ctx, ppc * 0.82, ppc * 0.235, ppc * 0.018, FADED);
     dot(ctx, ppc * 0.9, ppc * 0.275, ppc * 0.018, FADED);
   }
@@ -38,17 +91,75 @@ export function drawSnail(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: numbe
 }
 
 /** Заяц с длинной трубой. Испугавшись, зажимает уши лапами, труба падает. */
-export function drawHare(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, startled: boolean): void {
-  const body = cellPen(ppc, [[0.24, 0.98], [0.2, 0.72], [0.28, 0.52], [0.44, 0.5], [0.54, 0.66], [0.56, 0.98]]);
+export function drawHare(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  startled: boolean,
+): void {
+  const body = cellPen(ppc, [
+    [0.24, 0.98],
+    [0.2, 0.72],
+    [0.28, 0.52],
+    [0.44, 0.5],
+    [0.54, 0.66],
+    [0.56, 0.98],
+  ]);
   soft(ctx, rng, body, D.hare, ppc);
   const head = K.ellipsePath(ppc * 0.42, ppc * 0.42, ppc * 0.12, ppc * 0.1, 20);
   // Уши.
   if (startled) {
-    soft(ctx, rng, cellPen(ppc, [[0.34, 0.36], [0.24, 0.3], [0.16, 0.34], [0.22, 0.4]]), D.hare, ppc);
-    soft(ctx, rng, cellPen(ppc, [[0.44, 0.33], [0.38, 0.24], [0.3, 0.24], [0.36, 0.34]]), D.hare, ppc);
+    soft(
+      ctx,
+      rng,
+      cellPen(ppc, [
+        [0.34, 0.36],
+        [0.24, 0.3],
+        [0.16, 0.34],
+        [0.22, 0.4],
+      ]),
+      D.hare,
+      ppc,
+    );
+    soft(
+      ctx,
+      rng,
+      cellPen(ppc, [
+        [0.44, 0.33],
+        [0.38, 0.24],
+        [0.3, 0.24],
+        [0.36, 0.34],
+      ]),
+      D.hare,
+      ppc,
+    );
   } else {
-    soft(ctx, rng, cellPen(ppc, [[0.36, 0.36], [0.3, 0.16], [0.32, 0.04], [0.38, 0.14], [0.41, 0.34]]), D.hare, ppc);
-    soft(ctx, rng, cellPen(ppc, [[0.43, 0.34], [0.46, 0.14], [0.52, 0.06], [0.52, 0.18], [0.47, 0.36]]), D.hare, ppc);
+    soft(
+      ctx,
+      rng,
+      cellPen(ppc, [
+        [0.36, 0.36],
+        [0.3, 0.16],
+        [0.32, 0.04],
+        [0.38, 0.14],
+        [0.41, 0.34],
+      ]),
+      D.hare,
+      ppc,
+    );
+    soft(
+      ctx,
+      rng,
+      cellPen(ppc, [
+        [0.43, 0.34],
+        [0.46, 0.14],
+        [0.52, 0.06],
+        [0.52, 0.18],
+        [0.47, 0.36],
+      ]),
+      D.hare,
+      ppc,
+    );
   }
   soft(ctx, rng, head, D.hare, ppc);
   dot(ctx, ppc * 0.47, ppc * 0.4, ppc * 0.014, FADED);
@@ -56,19 +167,54 @@ export function drawHare(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number
     // Лапы на ушах, глаза зажмурены.
     soft(ctx, rng, K.ellipsePath(ppc * 0.31, ppc * 0.4, ppc * 0.05, ppc * 0.06, 14), D.hare, ppc);
     soft(ctx, rng, K.ellipsePath(ppc * 0.53, ppc * 0.36, ppc * 0.05, ppc * 0.06, 14), D.hare, ppc);
-    const horn = cellPen(ppc, [[0.6, 0.94, 1], [0.96, 0.9, 1], [0.97, 0.98, 1], [0.6, 0.98, 1]]);
+    const horn = cellPen(ppc, [
+      [0.6, 0.94, 1],
+      [0.96, 0.9, 1],
+      [0.97, 0.98, 1],
+      [0.6, 0.98, 1],
+    ]);
     soft(ctx, rng, horn, D.stone, ppc);
   } else {
-    const horn = cellPen(ppc, [[0.52, 0.45, 1], [0.86, 0.36], [0.97, 0.3, 1], [0.97, 0.48, 1], [0.86, 0.42], [0.53, 0.49, 1]]);
+    const horn = cellPen(ppc, [
+      [0.52, 0.45, 1],
+      [0.86, 0.36],
+      [0.97, 0.3, 1],
+      [0.97, 0.48, 1],
+      [0.86, 0.42],
+      [0.53, 0.49, 1],
+    ]);
     soft(ctx, rng, horn, D.stone, ppc);
     soft(ctx, rng, K.ellipsePath(ppc * 0.5, ppc * 0.58, ppc * 0.05, ppc * 0.05, 12), D.hare, ppc);
   }
 }
 
 /** Обезьянка с книгой. Испугавшись, закрывает уши, книга — на коленях. */
-export function drawMonkey(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, startled: boolean): void {
-  strokeCells(ctx, ppc, [[0.22, 0.86], [0.08, 0.8], [0.06, 0.66], [0.14, 0.6]], ppc * 0.012, ppc * 0.026, D.monkey);
-  const body = cellPen(ppc, [[0.22, 0.88], [0.24, 0.62], [0.4, 0.5], [0.56, 0.62], [0.6, 0.88]]);
+export function drawMonkey(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  startled: boolean,
+): void {
+  strokeCells(
+    ctx,
+    ppc,
+    [
+      [0.22, 0.86],
+      [0.08, 0.8],
+      [0.06, 0.66],
+      [0.14, 0.6],
+    ],
+    ppc * 0.012,
+    ppc * 0.026,
+    D.monkey,
+  );
+  const body = cellPen(ppc, [
+    [0.22, 0.88],
+    [0.24, 0.62],
+    [0.4, 0.5],
+    [0.56, 0.62],
+    [0.6, 0.88],
+  ]);
   soft(ctx, rng, body, D.monkey, ppc);
   const head = K.ellipsePath(ppc * 0.42, ppc * 0.38, ppc * 0.13, ppc * 0.12, 20);
   soft(ctx, rng, head, D.monkey, ppc);
@@ -77,15 +223,43 @@ export function drawMonkey(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: numb
   dot(ctx, ppc * 0.43, ppc * 0.38, ppc * 0.012, FADED);
   dot(ctx, ppc * 0.49, ppc * 0.38, ppc * 0.012, FADED);
   const book = startled
-    ? cellPen(ppc, [[0.28, 0.76, 1], [0.56, 0.74, 1], [0.58, 0.82, 1], [0.26, 0.84, 1]])
-    : cellPen(ppc, [[0.4, 0.62, 1], [0.66, 0.5, 1], [0.72, 0.62, 1], [0.46, 0.74, 1]]);
+    ? cellPen(ppc, [
+        [0.28, 0.76, 1],
+        [0.56, 0.74, 1],
+        [0.58, 0.82, 1],
+        [0.26, 0.84, 1],
+      ])
+    : cellPen(ppc, [
+        [0.4, 0.62, 1],
+        [0.66, 0.5, 1],
+        [0.72, 0.62, 1],
+        [0.46, 0.74, 1],
+      ]);
   soft(ctx, rng, book, palette.spines[4] ?? FADED, ppc);
   if (startled) {
-    soft(ctx, rng, K.ellipsePath(ppc * 0.28, ppc * 0.36, ppc * 0.05, ppc * 0.06, 12), D.monkey, ppc);
-    soft(ctx, rng, K.ellipsePath(ppc * 0.56, ppc * 0.34, ppc * 0.05, ppc * 0.06, 12), D.monkey, ppc);
+    soft(
+      ctx,
+      rng,
+      K.ellipsePath(ppc * 0.28, ppc * 0.36, ppc * 0.05, ppc * 0.06, 12),
+      D.monkey,
+      ppc,
+    );
+    soft(
+      ctx,
+      rng,
+      K.ellipsePath(ppc * 0.56, ppc * 0.34, ppc * 0.05, ppc * 0.06, 12),
+      D.monkey,
+      ppc,
+    );
   } else {
     soft(ctx, rng, K.ellipsePath(ppc * 0.3, ppc * 0.38, ppc * 0.04, ppc * 0.05, 12), D.monkey, ppc);
-    soft(ctx, rng, K.ellipsePath(ppc * 0.62, ppc * 0.62, ppc * 0.045, ppc * 0.045, 12), D.monkey, ppc);
+    soft(
+      ctx,
+      rng,
+      K.ellipsePath(ppc * 0.62, ppc * 0.62, ppc * 0.045, ppc * 0.045, 12),
+      D.monkey,
+      ppc,
+    );
   }
 }
 
@@ -97,7 +271,11 @@ export function drawSteam(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: numbe
     [0.05, -0.03, 0.055],
   ] as const) {
     const puff = K.ellipsePath(c + dx * ppc, c + dy * ppc, r * ppc, r * ppc * 0.9, 14);
-    K.shape(ctx, rng, puff, D.steam, inkW(ppc, 0.3), { rim: 0, mottle: 0, ink: { color: FADED, pools: false } });
+    K.shape(ctx, rng, puff, D.steam, inkW(ppc, 0.3), {
+      rim: 0,
+      mottle: 0,
+      ink: { color: FADED, pools: false },
+    });
   }
 }
 

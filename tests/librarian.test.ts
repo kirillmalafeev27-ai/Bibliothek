@@ -224,7 +224,9 @@ describe('нюх (2.3.5)', () => {
     expect(sniffTimes.length).toBeLessThanOrEqual(8);
     expect(waypoints).toBeGreaterThan(0);
     for (let i = 1; i < sniffTimes.length; i++) {
-      expect(sniffTimes[i]! - sniffTimes[i - 1]!).toBeGreaterThanOrEqual(A(s, s.level.sniffA) - 1e-6);
+      expect(sniffTimes[i]! - sniffTimes[i - 1]!).toBeGreaterThanOrEqual(
+        A(s, s.level.sniffA) - 1e-6,
+      );
     }
     expect(sniffTimes[0]!).toBeGreaterThanOrEqual(A(s, s.level.sniffA) - 1e-6);
   });
@@ -503,7 +505,8 @@ describe('библиотекарь не всезнающий (17.4)', () => {
         const r = reduce(s, { type: 'TICK', dt: 0.05 });
         // После поимки библиотекарь уходит к столу — дальше маршруты расходятся законно.
         if (r.events.some((e) => e.type === 'CAUGHT')) break;
-        for (const e of r.events) if (e.type === 'WAYPOINT') targets.push(`${e.target.x},${e.target.y}`);
+        for (const e of r.events)
+          if (e.type === 'WAYPOINT') targets.push(`${e.target.x},${e.target.y}`);
         s = r.state;
       }
       return targets;

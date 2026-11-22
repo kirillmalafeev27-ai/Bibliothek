@@ -39,7 +39,14 @@ interface Board {
   rows: number;
 }
 
-async function analyze(page: Page, withEl: Buffer, without: Buffer, region: Region, board: Board, cell: number): Promise<ToneResult> {
+async function analyze(
+  page: Page,
+  withEl: Buffer,
+  without: Buffer,
+  region: Region,
+  board: Board,
+  cell: number,
+): Promise<ToneResult> {
   return page.evaluate(
     async ({ a, b, region, board, cell }) => {
       const load = (src: string): Promise<ImageData> =>
@@ -61,13 +68,23 @@ async function analyze(page: Page, withEl: Buffer, without: Buffer, region: Regi
         const s = v / 255;
         return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
       };
-      const lum = (r: number, g: number, bl: number): number => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(bl);
+      const lum = (r: number, g: number, bl: number): number =>
+        0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(bl);
       type Acc = { l: [number, number, number]; g: [number, number, number]; n: number };
-      const acc: { a: Acc; b: Acc } = { a: { l: [0, 0, 0], g: [0, 0, 0], n: 0 }, b: { l: [0, 0, 0], g: [0, 0, 0], n: 0 } };
+      const acc: { a: Acc; b: Acc } = {
+        a: { l: [0, 0, 0], g: [0, 0, 0], n: 0 },
+        b: { l: [0, 0, 0], g: [0, 0, 0], n: 0 },
+      };
       const x0 = Math.max(0, Math.floor(region.box ? region.box.x : region.cx - region.r1 - 2));
       const y0 = Math.max(0, Math.floor(region.box ? region.box.y : region.cy - region.r1 - 2));
-      const x1 = Math.min(A.width - 1, Math.ceil(region.box ? region.box.x + region.box.w : region.cx + region.r1 + 2));
-      const y1 = Math.min(A.height - 1, Math.ceil(region.box ? region.box.y + region.box.h : region.cy + region.r1 + 2));
+      const x1 = Math.min(
+        A.width - 1,
+        Math.ceil(region.box ? region.box.x + region.box.w : region.cx + region.r1 + 2),
+      );
+      const y1 = Math.min(
+        A.height - 1,
+        Math.ceil(region.box ? region.box.y + region.box.h : region.cy + region.r1 + 2),
+      );
       for (let y = y0; y <= y1; y++) {
         for (let x = x0; x <= x1; x++) {
           if (!region.box) {
@@ -75,7 +92,10 @@ async function analyze(page: Page, withEl: Buffer, without: Buffer, region: Regi
             if (d < region.r0 || d > region.r1) continue;
           }
           const i = (y * A.width + x) * 4;
-          const diff = Math.abs(A.data[i]! - B.data[i]!) + Math.abs(A.data[i + 1]! - B.data[i + 1]!) + Math.abs(A.data[i + 2]! - B.data[i + 2]!);
+          const diff =
+            Math.abs(A.data[i]! - B.data[i]!) +
+            Math.abs(A.data[i + 1]! - B.data[i + 1]!) +
+            Math.abs(A.data[i + 2]! - B.data[i + 2]!);
           if (diff < 45) continue;
           if (region.dark && lum(A.data[i]!, A.data[i + 1]!, A.data[i + 2]!) > 0.06) continue;
           const tx = Math.floor((x - board.x) / cell);
@@ -120,7 +140,10 @@ test('8.4: нимб, кольца и маникула читаются на пл
     loudR: number;
   };
   const world = (await page.locator('.lib-world').boundingBox())!;
-  const off = (p: { x: number; y: number }): { x: number; y: number } => ({ x: p.x + world.x, y: p.y + world.y });
+  const off = (p: { x: number; y: number }): { x: number; y: number } => ({
+    x: p.x + world.x,
+    y: p.y + world.y,
+  });
   const board = { ...off(geo.board), cols: 9, rows: 11 };
   const c = geo.cell;
   const all = ['halo', 'loud', 'rings', 'hands', 'prints'];
@@ -146,19 +169,54 @@ test('8.4: нимб, кольца и маникула читаются на пл
   const results: Record<string, ToneResult> = {};
   {
     const [a, b] = await shotWithout('halo');
-    results.halo = await analyze(page, a, b, { cx: lib.x, cy: lib.y, r0: geo.hearR * c - 0.03 * c, r1: geo.hearR * c + 0.04 * c }, board, c);
+    results.halo = await analyze(
+      page,
+      a,
+      b,
+      { cx: lib.x, cy: lib.y, r0: geo.hearR * c - 0.03 * c, r1: geo.hearR * c + 0.04 * c },
+      board,
+      c,
+    );
   }
   {
     const [a, b] = await shotWithout('loud');
-    results.loud = await analyze(page, a, b, { cx: lib.x, cy: lib.y, r0: geo.loudR * c - 0.035 * c, r1: geo.loudR * c + 0.035 * c }, board, c);
+    results.loud = await analyze(
+      page,
+      a,
+      b,
+      { cx: lib.x, cy: lib.y, r0: geo.loudR * c - 0.035 * c, r1: geo.loudR * c + 0.035 * c },
+      board,
+      c,
+    );
   }
   {
     const [a, b] = await shotWithout('rings');
-    results.error = await analyze(page, a, b, { cx: hero.x, cy: hero.y, r0: geo.loudR * c - 0.06 * c, r1: geo.loudR * c + 0.06 * c }, board, c);
+    results.error = await analyze(
+      page,
+      a,
+      b,
+      { cx: hero.x, cy: hero.y, r0: geo.loudR * c - 0.06 * c, r1: geo.loudR * c + 0.06 * c },
+      board,
+      c,
+    );
   }
   {
     const [a, b] = await shotWithout('hands');
-    results.manicule = await analyze(page, a, b, { cx: 0, cy: 0, r0: 0, r1: 0, dark: true, box: { x: target.x - c * 1.2, y: target.y - c * 0.9, w: c * 2.4, h: c * 1.8 } }, board, c);
+    results.manicule = await analyze(
+      page,
+      a,
+      b,
+      {
+        cx: 0,
+        cy: 0,
+        r0: 0,
+        r1: 0,
+        dark: true,
+        box: { x: target.x - c * 1.2, y: target.y - c * 0.9, w: c * 2.4, h: c * 1.8 },
+      },
+      board,
+      c,
+    );
   }
   console.log(JSON.stringify(results, null, 1));
   const need: Record<string, number> = { halo: 3, loud: 3, error: 3, manicule: 4.5 };

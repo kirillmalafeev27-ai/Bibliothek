@@ -32,7 +32,8 @@ export class Round {
     if (r.events.length > 0) {
       for (const e of r.events) {
         // Бросок сделан или сорвался — прицеливание закончено.
-        if (e.type === 'THROW' || e.type === 'CAUGHT' || e.type === 'EXIT' || e.type === 'LOST') this.endAim();
+        if (e.type === 'THROW' || e.type === 'CAUGHT' || e.type === 'EXIT' || e.type === 'LOST')
+          this.endAim();
       }
       for (const fn of this.listeners) fn(r.events, r.state, prev);
     }
@@ -90,7 +91,11 @@ export class Round {
       return [];
     }
     const h = this.state.hero.cell;
-    return this.dispatch({ type: 'SET_INTENT', kind: 'move', cell: { x: h.x + dir.x, y: h.y + dir.y } });
+    return this.dispatch({
+      type: 'SET_INTENT',
+      kind: 'move',
+      cell: { x: h.x + dir.x, y: h.y + dir.y },
+    });
   }
 
   stay(): GameEvent[] {

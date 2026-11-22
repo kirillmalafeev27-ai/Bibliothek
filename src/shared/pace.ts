@@ -44,7 +44,9 @@ export class Pace {
     try {
       const parsed = JSON.parse(raw) as Partial<PaceData>;
       const nums = (v: unknown): number[] =>
-        Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number' && Number.isFinite(x)) : [];
+        Array.isArray(v)
+          ? v.filter((x): x is number => typeof x === 'number' && Number.isFinite(x))
+          : [];
       this.data = {
         times: nums(parsed.times).slice(-this.cfg.tmedWindow),
         hits: nums(parsed.hits).slice(-this.cfg.pWindow),

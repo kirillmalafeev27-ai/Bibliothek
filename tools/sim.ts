@@ -255,7 +255,15 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { runs: 1000, p: 0.8, tmed: 5, seed: 1, all: false, escalation: false, table: false };
+  const a: Args = {
+    runs: 1000,
+    p: 0.8,
+    tmed: 5,
+    seed: 1,
+    all: false,
+    escalation: false,
+    table: false,
+  };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     const v = argv[i + 1];
@@ -268,7 +276,8 @@ function parseArgs(argv: string[]): Args {
     else if (k === '--all') a.all = true;
     else if (k === '--escalation') a.escalation = true;
     else if (k === '--table') a.table = true;
-    else if (k === '--levels' && v) a.levels = v.split(',').map((x) => (x === '∞' || x === 'inf' ? 7 : Number(x)));
+    else if (k === '--levels' && v)
+      a.levels = v.split(',').map((x) => (x === '∞' || x === 'inf' ? 7 : Number(x)));
     else if (k === '--patience' && v) a.patience = Number(v);
   }
   return a;
@@ -341,20 +350,35 @@ function runAll(a: Args): void {
     const id = level.id;
     const c = get(id, 'cautious');
     const [lo, hi] = WIN_TARGETS[id]!;
-    ok(c.win >= lo && c.win <= hi + 0.5, `ур. ${levelName(id)}: победы осторожного ${fmt(c.win, 1)}% в ${lo}–${hi}%`);
+    ok(
+      c.win >= lo && c.win <= hi + 0.5,
+      `ур. ${levelName(id)}: победы осторожного ${fmt(c.win, 1)}% в ${lo}–${hi}%`,
+    );
     if (id >= 3) {
       const r = get(id, 'rusher');
-      ok(r.star2 <= c.star2 / 2 + 0.5, `ур. ${levelName(id)}: «напролом» ★★ ${fmt(r.star2, 1)}% ≤ половины осторожного (${fmt(c.star2 / 2, 1)}%)`);
+      ok(
+        r.star2 <= c.star2 / 2 + 0.5,
+        `ур. ${levelName(id)}: «напролом» ★★ ${fmt(r.star2, 1)}% ≤ половины осторожного (${fmt(c.star2 / 2, 1)}%)`,
+      );
       const i = get(id, 'impatient');
-      ok(c.star2 - i.star2 >= 10, `ур. ${levelName(id)}: «без выдержки» ★★ ${fmt(i.star2, 1)}% минимум на 10 п. ниже (${fmt(c.star2, 1)}%)`);
+      ok(
+        c.star2 - i.star2 >= 10,
+        `ур. ${levelName(id)}: «без выдержки» ★★ ${fmt(i.star2, 1)}% минимум на 10 п. ниже (${fmt(c.star2, 1)}%)`,
+      );
     }
     if (id >= 6) {
       const r = get(id, 'rusher');
-      ok(c.win - r.win >= 20, `ур. ${levelName(id)}: «напролом» выигрывает ${fmt(r.win, 1)}% — минимум на 20 п. реже (${fmt(c.win, 1)}%)`);
+      ok(
+        c.win - r.win >= 20,
+        `ур. ${levelName(id)}: «напролом» выигрывает ${fmt(r.win, 1)}% — минимум на 20 п. реже (${fmt(c.win, 1)}%)`,
+      );
     }
     if (id >= 4) {
       const n = get(id, 'nobooks');
-      ok(c.win - n.win >= 15, `ур. ${levelName(id)}: «без книг» выигрывает ${fmt(n.win, 1)}% — минимум на 15 п. реже (${fmt(c.win, 1)}%)`);
+      ok(
+        c.win - n.win >= 15,
+        `ур. ${levelName(id)}: «без книг» выигрывает ${fmt(n.win, 1)}% — минимум на 15 п. реже (${fmt(c.win, 1)}%)`,
+      );
     }
     const fast = get(id, 'cautious', 0.8, 3);
     const slow = get(id, 'cautious', 0.8, 8);
@@ -365,15 +389,32 @@ function runAll(a: Args): void {
   }
   const has = (id: number): boolean => chosen.some((l) => l.id === id);
   if (has(4)) {
-    ok(get(4, 'cautious', 0.9).win >= 92, `ур. 4, p = 0.9: ${fmt(get(4, 'cautious', 0.9).win, 1)}% ≥ 92%`);
-    ok(get(4, 'cautious', 0.65).win <= 70, `ур. 4, p = 0.65: ${fmt(get(4, 'cautious', 0.65).win, 1)}% ≤ 70%`);
+    ok(
+      get(4, 'cautious', 0.9).win >= 92,
+      `ур. 4, p = 0.9: ${fmt(get(4, 'cautious', 0.9).win, 1)}% ≥ 92%`,
+    );
+    ok(
+      get(4, 'cautious', 0.65).win <= 70,
+      `ур. 4, p = 0.65: ${fmt(get(4, 'cautious', 0.65).win, 1)}% ≤ 70%`,
+    );
   }
-  if (has(1)) ok(get(1, 'cautious', 0.65).win >= 95, `ур. 1, p = 0.65: ${fmt(get(1, 'cautious', 0.65).win, 1)}% ≥ 95%`);
-  if (has(2)) ok(get(2, 'cautious', 0.65).win >= 85, `ур. 2, p = 0.65: ${fmt(get(2, 'cautious', 0.65).win, 1)}% ≥ 85%`);
+  if (has(1))
+    ok(
+      get(1, 'cautious', 0.65).win >= 95,
+      `ур. 1, p = 0.65: ${fmt(get(1, 'cautious', 0.65).win, 1)}% ≥ 95%`,
+    );
+  if (has(2))
+    ok(
+      get(2, 'cautious', 0.65).win >= 85,
+      `ур. 2, p = 0.65: ${fmt(get(2, 'cautious', 0.65).win, 1)}% ≥ 85%`,
+    );
 
   for (const id of [3, 4].filter(has)) {
     const e = simulate(levelById(id), 'impatient', a.runs, 0.8, 5, a.seed, true);
-    ok(e.escFirst <= 12, `ур. ${id}: одна услышанная ошибка кончается поимкой в ${fmt(e.escFirst, 1)}% (≤ 12%)`);
+    ok(
+      e.escFirst <= 12,
+      `ур. ${id}: одна услышанная ошибка кончается поимкой в ${fmt(e.escFirst, 1)}% (≤ 12%)`,
+    );
     ok(
       e.escSecond >= 2.5 * e.escFirst,
       `ур. ${id}: вторая в пределах 4 единиц — в ${fmt(e.escSecond, 1)}% (≥ 2.5× первой)`,
@@ -405,7 +446,8 @@ function main(): void {
   const t0 = Date.now();
   for (const id of ids) {
     console.log(`\nУровень ${levelName(id)} — ${a.runs} раундов`);
-    for (const bot of a.bot ? [a.bot] : BOTS) printSummary(simulate(levelById(id), bot, a.runs, a.p, a.tmed, a.seed));
+    for (const bot of a.bot ? [a.bot] : BOTS)
+      printSummary(simulate(levelById(id), bot, a.runs, a.p, a.tmed, a.seed));
   }
   console.log(`\n${((Date.now() - t0) / 1000).toFixed(1)} с`);
 }

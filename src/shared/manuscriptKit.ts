@@ -58,7 +58,8 @@ export function mulberry32(seed: number): Rand {
 
 export const rnd = (rng: Rand, a: number, b: number): number => a + rng() * (b - a);
 export const rndInt = (rng: Rand, a: number, b: number): number => Math.floor(rnd(rng, a, b + 1));
-export const pick = <T>(rng: Rand, items: readonly T[]): T => items[Math.floor(rng() * items.length)] as T;
+export const pick = <T>(rng: Rand, items: readonly T[]): T =>
+  items[Math.floor(rng() * items.length)] as T;
 
 /** Строка → сид (для кэшей и ключей текстур). */
 export function hashSeed(text: string): number {
@@ -173,7 +174,10 @@ export function spline(pts: readonly PenPoint[], closed: boolean, perSeg = 8): V
   if (n < 2) return pts.map((p) => ({ x: p.x, y: p.y }));
   const out: Vec[] = [];
   const segs = closed ? n : n - 1;
-  const at = (i: number): PenPoint => (closed ? (pts[((i % n) + n) % n] as PenPoint) : (pts[Math.min(n - 1, Math.max(0, i))] as PenPoint));
+  const at = (i: number): PenPoint =>
+    closed
+      ? (pts[((i % n) + n) % n] as PenPoint)
+      : (pts[Math.min(n - 1, Math.max(0, i))] as PenPoint);
   for (let i = 0; i < segs; i++) {
     const p1 = at(i);
     const p2 = at(i + 1);
@@ -184,8 +188,18 @@ export function spline(pts: readonly PenPoint[], closed: boolean, perSeg = 8): V
       const t2 = t * t;
       const t3 = t2 * t;
       out.push({
-        x: 0.5 * (2 * p1.x + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
-        y: 0.5 * (2 * p1.y + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
+        x:
+          0.5 *
+          (2 * p1.x +
+            (-p0.x + p2.x) * t +
+            (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+            (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+        y:
+          0.5 *
+          (2 * p1.y +
+            (-p0.y + p2.y) * t +
+            (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+            (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
       });
     }
   }
@@ -197,7 +211,11 @@ export function spline(pts: readonly PenPoint[], closed: boolean, perSeg = 8): V
 }
 
 /** Короткая запись опорных точек: [x, y] — плавная, [x, y, 1] — излом. */
-export function pen(points: readonly (readonly [number, number] | readonly [number, number, number])[], closed = true, perSeg = 8): Vec[] {
+export function pen(
+  points: readonly (readonly [number, number] | readonly [number, number, number])[],
+  closed = true,
+  perSeg = 8,
+): Vec[] {
   return spline(
     points.map((p) => ({ x: p[0], y: p[1], corner: p[2] === 1 })),
     closed,
@@ -205,7 +223,14 @@ export function pen(points: readonly (readonly [number, number] | readonly [numb
   );
 }
 
-export function ellipsePath(cx: number, cy: number, rx: number, ry: number, steps = 40, rot = 0): Vec[] {
+export function ellipsePath(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  steps = 40,
+  rot = 0,
+): Vec[] {
   const out: Vec[] = [];
   const cr = Math.cos(rot);
   const sr = Math.sin(rot);
@@ -223,7 +248,14 @@ export function rectPath(x: number, y: number, w: number, h: number): Vec[] {
 }
 
 /** Прямоугольник со скруглёнными углами как ломаная. */
-export function roundRectPath(x: number, y: number, w: number, h: number, r: number, steps = 5): Vec[] {
+export function roundRectPath(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  steps = 5,
+): Vec[] {
   const rr = Math.min(r, w / 2, h / 2);
   const out: Vec[] = [];
   const corner = (cx: number, cy: number, a0: number): void => {
@@ -263,7 +295,13 @@ export function resample(pts: readonly Vec[], step: number, closed: boolean): Ve
 }
 
 /** Лёгкое дрожание руки: плавное смещение точек вдоль нормали. */
-export function wobble(rng: Rand, pts: readonly Vec[], amp: number, closed: boolean, wavelength = 26): Vec[] {
+export function wobble(
+  rng: Rand,
+  pts: readonly Vec[],
+  amp: number,
+  closed: boolean,
+  wavelength = 26,
+): Vec[] {
   const n = pts.length;
   if (n < 3 || amp <= 0) return pts.slice();
   const p1 = rng() * 100;
@@ -281,7 +319,9 @@ export function wobble(rng: Rand, pts: readonly Vec[], amp: number, closed: bool
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const len = Math.hypot(dx, dy) || 1;
-    const k = (Math.sin(dist / wavelength + p1) * 0.65 + Math.sin(dist / (wavelength * 0.37) + p2) * 0.35) * amp;
+    const k =
+      (Math.sin(dist / wavelength + p1) * 0.65 + Math.sin(dist / (wavelength * 0.37) + p2) * 0.35) *
+      amp;
     out.push({ x: p.x + (-dy / len) * k, y: p.y + (dx / len) * k });
   }
   return out;
@@ -312,7 +352,10 @@ export function pathBounds(pts: readonly Vec[]): { x: number; y: number; w: numb
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
-export function transformPath(pts: readonly Vec[], t: { dx?: number; dy?: number; sx?: number; sy?: number; rot?: number; ox?: number; oy?: number }): Vec[] {
+export function transformPath(
+  pts: readonly Vec[],
+  t: { dx?: number; dy?: number; sx?: number; sy?: number; rot?: number; ox?: number; oy?: number },
+): Vec[] {
   const sx = t.sx ?? 1;
   const sy = t.sy ?? sx;
   const cr = Math.cos(t.rot ?? 0);
@@ -576,7 +619,8 @@ export function shape(
   opts: TemperaOptions & { ink?: InkOptions; noOutline?: boolean } = {},
 ): void {
   tempera(ctx, rng, path, color, opts);
-  if (!opts.noOutline && lineW > 0) inkOutline(ctx, rng, path, lineW, { closed: true, ...opts.ink });
+  if (!opts.noOutline && lineW > 0)
+    inkOutline(ctx, rng, path, lineW, { closed: true, ...opts.ink });
 }
 
 // ───────────────────────────── сусальное золото ─────────────────────────────
@@ -698,7 +742,12 @@ export interface ParchmentOptions {
 }
 
 /** Текстура пергамента: основа, тонкие волокна, редкие пятна, темнеющий край, лёгкое зерно. */
-export function parchment(rng: Rand, w: number, h: number, opts: ParchmentOptions = {}): HTMLCanvasElement {
+export function parchment(
+  rng: Rand,
+  w: number,
+  h: number,
+  opts: ParchmentOptions = {},
+): HTMLCanvasElement {
   const k = kc();
   const canvas = makeCanvas(w, h);
   const ctx = ctx2d(canvas);
@@ -746,14 +795,22 @@ export function parchment(rng: Rand, w: number, h: number, opts: ParchmentOption
     const len = 5 + rng() * 22;
     const bend = (rng() - 0.5) * 8;
     const dark = rng() < 0.62;
-    ctx.strokeStyle = withAlpha(dark ? k.parchmentEdge : k.paperWhite, dark ? 0.1 + rng() * 0.2 : 0.2 + rng() * 0.3);
+    ctx.strokeStyle = withAlpha(
+      dark ? k.parchmentEdge : k.paperWhite,
+      dark ? 0.1 + rng() * 0.2 : 0.2 + rng() * 0.3,
+    );
     ctx.lineWidth = 0.4 + rng() * 0.8;
     const dx = Math.cos(a) * len;
     const dy = Math.sin(a) * len;
     wrap(x, y, len + 8, (ox, oy) => {
       ctx.beginPath();
       ctx.moveTo(x + ox, y + oy);
-      ctx.quadraticCurveTo(x + ox + dx / 2 - Math.sin(a) * bend, y + oy + dy / 2 + Math.cos(a) * bend, x + ox + dx, y + oy + dy);
+      ctx.quadraticCurveTo(
+        x + ox + dx / 2 - Math.sin(a) * bend,
+        y + oy + dy / 2 + Math.cos(a) * bend,
+        x + ox + dx,
+        y + oy + dy,
+      );
       ctx.stroke();
     });
   }
@@ -775,7 +832,14 @@ export function parchment(rng: Rand, w: number, h: number, opts: ParchmentOption
 
   const edge = opts.edge ?? 0;
   if (edge > 0 && !tile) {
-    const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) * 0.56);
+    const g = ctx.createRadialGradient(
+      w / 2,
+      h / 2,
+      Math.min(w, h) * 0.3,
+      w / 2,
+      h / 2,
+      Math.hypot(w, h) * 0.56,
+    );
     g.addColorStop(0, withAlpha(k.parchmentEdge, 0));
     g.addColorStop(1, withAlpha(k.parchmentEdge, edge));
     ctx.fillStyle = g;
@@ -787,7 +851,13 @@ export function parchment(rng: Rand, w: number, h: number, opts: ParchmentOption
 let grainTile: HTMLCanvasElement | null = null;
 
 /** Зерно: мелкий шум, одинаково ложится на бумагу и на краску. */
-export function grain(ctx: CanvasRenderingContext2D, rng: Rand, w: number, h: number, strength: number): void {
+export function grain(
+  ctx: CanvasRenderingContext2D,
+  rng: Rand,
+  w: number,
+  h: number,
+  strength: number,
+): void {
   if (strength <= 0) return;
   if (!grainTile) {
     const size = 128;
@@ -822,7 +892,13 @@ export function grain(ctx: CanvasRenderingContext2D, rng: Rand, w: number, h: nu
  * Зерно только поверх уже нарисованного (по альфа-каналу холста): краска на спрайте
  * получает ту же фактуру, что и страница, а прозрачные места остаются прозрачными.
  */
-export function grainOver(ctx: CanvasRenderingContext2D, rng: Rand, w: number, h: number, strength: number): void {
+export function grainOver(
+  ctx: CanvasRenderingContext2D,
+  rng: Rand,
+  w: number,
+  h: number,
+  strength: number,
+): void {
   ctx.save();
   ctx.globalCompositeOperation = 'source-atop';
   grain(ctx, rng, w, h, strength);
@@ -875,12 +951,21 @@ export function ivyLeaf(cx: number, cy: number, size: number, angle: number): Ve
 }
 
 /** Спиральный завиток, выходящий из точки под углом `angle`. */
-export function curlPath(x: number, y: number, size: number, angle: number, turn: 1 | -1, turns = 1.35): Vec[] {
+export function curlPath(
+  x: number,
+  y: number,
+  size: number,
+  angle: number,
+  turn: 1 | -1,
+  turns = 1.35,
+): Vec[] {
   const pts: Vec[] = [];
   const steps = Math.round(22 * turns);
   // Центр спирали — сбоку от точки выхода, чтобы завиток начинался по касательной.
-  const cx = x + Math.cos(angle) * size * 0.55 + Math.cos(angle + (turn * Math.PI) / 2) * size * 0.5;
-  const cy = y + Math.sin(angle) * size * 0.55 + Math.sin(angle + (turn * Math.PI) / 2) * size * 0.5;
+  const cx =
+    x + Math.cos(angle) * size * 0.55 + Math.cos(angle + (turn * Math.PI) / 2) * size * 0.5;
+  const cy =
+    y + Math.sin(angle) * size * 0.55 + Math.sin(angle + (turn * Math.PI) / 2) * size * 0.5;
   const a0 = Math.atan2(y - cy, x - cx);
   const r0 = Math.hypot(x - cx, y - cy);
   for (let i = 0; i <= steps; i++) {
@@ -893,7 +978,15 @@ export function curlPath(x: number, y: number, size: number, angle: number, turn
 }
 
 /** Золотой шарик с усиками — бизант, обычный мотив французских полей XV века. */
-export function bezant(ctx: CanvasRenderingContext2D, rng: Rand, x: number, y: number, r: number, color: string, gold: boolean): void {
+export function bezant(
+  ctx: CanvasRenderingContext2D,
+  rng: Rand,
+  x: number,
+  y: number,
+  r: number,
+  color: string,
+  gold: boolean,
+): void {
   const k = kc();
   const whiskers = 3 + Math.floor(rng() * 3);
   const a0 = rng() * Math.PI * 2;
@@ -904,7 +997,10 @@ export function bezant(ctx: CanvasRenderingContext2D, rng: Rand, x: number, y: n
       ctx,
       [
         { x: x + Math.cos(a) * r * 0.9, y: y + Math.sin(a) * r * 0.9 },
-        { x: x + Math.cos(a + 0.12) * (r + len * 0.55), y: y + Math.sin(a + 0.12) * (r + len * 0.55) },
+        {
+          x: x + Math.cos(a + 0.12) * (r + len * 0.55),
+          y: y + Math.sin(a + 0.12) * (r + len * 0.55),
+        },
         { x: x + Math.cos(a + 0.3) * (r + len), y: y + Math.sin(a + 0.3) * (r + len) },
       ],
       Math.max(0.5, r * 0.16),
@@ -933,14 +1029,22 @@ export function bezant(ctx: CanvasRenderingContext2D, rng: Rand, x: number, y: n
     ctx.fill();
     ctx.restore();
   }
-  nibStroke(ctx, circle, Math.max(0.5, r * 0.14), Math.max(0.8, r * 0.3), NIB_ANGLE, { closed: true, color });
+  nibStroke(ctx, circle, Math.max(0.5, r * 0.14), Math.max(0.8, r * 0.3), NIB_ANGLE, {
+    closed: true,
+    color,
+  });
 }
 
 /**
  * Орнаментальная лоза: стебель, спиральные завитки, листья плюща, росчерки пера.
  * `path` — ось стебля (ломаная).
  */
-export function vine(ctx: CanvasRenderingContext2D, rng: Rand, path: readonly Vec[], opts: VineOptions = {}): void {
+export function vine(
+  ctx: CanvasRenderingContext2D,
+  rng: Rand,
+  path: readonly Vec[],
+  opts: VineOptions = {},
+): void {
   const k = kc();
   const color = opts.color ?? k.inkFaded;
   const stem = opts.stem ?? 1.6;
@@ -982,7 +1086,18 @@ export function vine(ctx: CanvasRenderingContext2D, rng: Rand, path: readonly Ve
       const len = curl * (0.7 + rng() * 0.5);
       const tx = b.x + Math.cos(out) * len;
       const ty = b.y + Math.sin(out) * len;
-      const stalk = spline([b, { x: (b.x + tx) / 2 + Math.cos(out + side * 1.2) * len * 0.18, y: (b.y + ty) / 2 + Math.sin(out + side * 1.2) * len * 0.18 }, { x: tx, y: ty }], false, 5);
+      const stalk = spline(
+        [
+          b,
+          {
+            x: (b.x + tx) / 2 + Math.cos(out + side * 1.2) * len * 0.18,
+            y: (b.y + ty) / 2 + Math.sin(out + side * 1.2) * len * 0.18,
+          },
+          { x: tx, y: ty },
+        ],
+        false,
+        5,
+      );
       nibStroke(ctx, stalk, stem * 0.4, stem * 0.95, NIB_ANGLE, { color, taper: 0.1 });
       const ls = leaf * (0.95 + rng() * 0.4);
       const lp = ivyLeaf(tx + Math.cos(out) * ls * 0.42, ty + Math.sin(out) * ls * 0.42, ls, out);
@@ -998,19 +1113,39 @@ export function vine(ctx: CanvasRenderingContext2D, rng: Rand, path: readonly Ve
       }
       nibStroke(ctx, lp, stem * 0.35, stem * 0.85, NIB_ANGLE, { closed: true, color });
       // Жилка листа.
-      nibStroke(ctx, [{ x: tx, y: ty }, { x: tx + Math.cos(out) * ls * 0.8, y: ty + Math.sin(out) * ls * 0.8 }], stem * 0.25, stem * 0.6, NIB_ANGLE, { color, taper: 0.3 });
+      nibStroke(
+        ctx,
+        [
+          { x: tx, y: ty },
+          { x: tx + Math.cos(out) * ls * 0.8, y: ty + Math.sin(out) * ls * 0.8 },
+        ],
+        stem * 0.25,
+        stem * 0.6,
+        NIB_ANGLE,
+        { color, taper: 0.3 },
+      );
     } else {
       // Бутон или шарик на коротком усике.
       const len = curl * (0.5 + rng() * 0.35);
       const tx = b.x + Math.cos(out) * len;
       const ty = b.y + Math.sin(out) * len;
-      nibStroke(ctx, [b, { x: tx, y: ty }], stem * 0.4, stem * 0.9, NIB_ANGLE, { color, taper: 0.1 });
+      nibStroke(ctx, [b, { x: tx, y: ty }], stem * 0.4, stem * 0.9, NIB_ANGLE, {
+        color,
+        taper: 0.1,
+      });
       if (opts.buds !== false && rng() < 0.55) {
         const tone = rng() < 0.5 ? k.accentBlue : k.accentRed;
         const r = leaf * 0.24;
         for (let p = 0; p < 3; p++) {
           const pa = out + (p - 1) * 0.9;
-          const petal = ellipsePath(tx + Math.cos(pa) * r * 0.9, ty + Math.sin(pa) * r * 0.9, r * 0.9, r * 0.62, 10, pa);
+          const petal = ellipsePath(
+            tx + Math.cos(pa) * r * 0.9,
+            ty + Math.sin(pa) * r * 0.9,
+            r * 0.9,
+            r * 0.62,
+            10,
+            pa,
+          );
           ctx.save();
           ctx.beginPath();
           tracePath(ctx, petal, true);
@@ -1028,7 +1163,14 @@ export function vine(ctx: CanvasRenderingContext2D, rng: Rand, path: readonly Ve
 }
 
 /** Росчерк пера — группа из трёх точек и завитушки (заполняет пустоты орнамента). */
-export function flourish(ctx: CanvasRenderingContext2D, rng: Rand, x: number, y: number, size: number, color?: string): void {
+export function flourish(
+  ctx: CanvasRenderingContext2D,
+  rng: Rand,
+  x: number,
+  y: number,
+  size: number,
+  color?: string,
+): void {
   const col = color ?? kc().inkFaded;
   const a = rng() * Math.PI * 2;
   for (let i = 0; i < 3; i++) {
@@ -1159,7 +1301,8 @@ function banderoleGeom(w: number, h: number, curl: number, opts: BanderoleOption
   const x0 = pad + roll;
   const x1 = w - pad - roll;
   const wave = (opts.wave ?? 0.07) * h;
-  const mid = (x: number): number => h / 2 + Math.sin(((x - x0) / Math.max(1, x1 - x0)) * Math.PI * 2) * wave;
+  const mid = (x: number): number =>
+    h / 2 + Math.sin(((x - x0) / Math.max(1, x1 - x0)) * Math.PI * 2) * wave;
   return { band, roll, x0, x1, line, mid };
 }
 
@@ -1168,7 +1311,13 @@ function banderoleGeom(w: number, h: number, curl: number, opts: BanderoleOption
  * Рисуется в прямоугольнике (0, 0, w, h) и не выходит за него; текст помещается
  * в прямоугольник banderoleTextBox(). `curl` — размер завитков на концах (0–1).
  */
-export function banderole(ctx: CanvasRenderingContext2D, w: number, h: number, curl: number, opts: BanderoleOptions = {}): void {
+export function banderole(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  curl: number,
+  opts: BanderoleOptions = {},
+): void {
   const k = kc();
   const rng = mulberry32(opts.seed ?? 7);
   const fill = opts.fill ?? k.paperWhite;
@@ -1248,7 +1397,12 @@ export function banderole(ctx: CanvasRenderingContext2D, w: number, h: number, c
 }
 
 /** Прямоугольник бандероли, в который вписывается текст. */
-export function banderoleTextBox(w: number, h: number, curl: number, opts: BanderoleOptions = {}): { x: number; y: number; w: number; h: number } {
+export function banderoleTextBox(
+  w: number,
+  h: number,
+  curl: number,
+  opts: BanderoleOptions = {},
+): { x: number; y: number; w: number; h: number } {
   const g = banderoleGeom(w, h, curl, opts);
   const x = g.x0 + g.roll * 1.25;
   return { x, y: h / 2 - g.band / 2, w: w - x * 2, h: g.band };
@@ -1269,14 +1423,27 @@ export interface ManiculeOptions {
  * Указующая рука ☞ — знак на полях средневековых книг. Рисуется в прямоугольнике
  * size × size·0.6, палец смотрит вправо. `color` — заливка кисти.
  */
-export function manicule(ctx: CanvasRenderingContext2D, size: number, color: string, opts: ManiculeOptions = {}): void {
+export function manicule(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  color: string,
+  opts: ManiculeOptions = {},
+): void {
   const k = kc();
   const rng = mulberry32(opts.seed ?? 11);
   const ink = opts.ink ?? k.ink;
   const s = size / 100;
   const line = opts.line ?? Math.max(1.3, size * 0.04);
-  const P = (pts: readonly (readonly [number, number] | readonly [number, number, number])[]): Vec[] =>
-    pen(pts.map((p) => (p.length === 3 ? ([p[0] * s, p[1] * s, p[2]] as const) : ([p[0] * s, p[1] * s] as const))), true, 6);
+  const P = (
+    pts: readonly (readonly [number, number] | readonly [number, number, number])[],
+  ): Vec[] =>
+    pen(
+      pts.map((p) =>
+        p.length === 3 ? ([p[0] * s, p[1] * s, p[2]] as const) : ([p[0] * s, p[1] * s] as const),
+      ),
+      true,
+      6,
+    );
 
   // Кисть: ладонь, большой палец сверху, вытянутый указательный, три согнутых пальца снизу.
   const hand = P([
@@ -1311,7 +1478,10 @@ export function manicule(ctx: CanvasRenderingContext2D, size: number, color: str
   inkOutline(ctx, rng, hand, line, { closed: true, color: ink, pools: false });
   // Складки между пальцами.
   const fold = (a: [number, number], b: [number, number], bend = 0.14): void =>
-    inkLine(ctx, rng, { x: a[0] * s, y: a[1] * s }, { x: b[0] * s, y: b[1] * s }, line * 0.62, { color: ink, bend });
+    inkLine(ctx, rng, { x: a[0] * s, y: a[1] * s }, { x: b[0] * s, y: b[1] * s }, line * 0.62, {
+      color: ink,
+      bend,
+    });
   fold([66, 33], [50, 33]);
   fold([58, 43], [46, 41]);
   fold([48, 51], [38, 47]);
@@ -1325,8 +1495,14 @@ export function manicule(ctx: CanvasRenderingContext2D, size: number, color: str
     [3, 52, 1],
     [6, 31],
   ]);
-  shape(ctx, rng, cuff, opts.cuff ?? k.paperWhite, line, { rim: line * 0.7, ink: { color: ink, pools: false } });
-  inkLine(ctx, rng, { x: 12 * s, y: 14.5 * s }, { x: 12 * s, y: 47.5 * s }, line * 0.55, { color: ink, bend: -0.08 });
+  shape(ctx, rng, cuff, opts.cuff ?? k.paperWhite, line, {
+    rim: line * 0.7,
+    ink: { color: ink, pools: false },
+  });
+  inkLine(ctx, rng, { x: 12 * s, y: 14.5 * s }, { x: 12 * s, y: 47.5 * s }, line * 0.55, {
+    color: ink,
+    bend: -0.08,
+  });
 }
 
 // ───────────────────────────── текст ─────────────────────────────
@@ -1377,7 +1553,11 @@ const wordCache = new Map<string, HTMLCanvasElement>();
  * Слово-звук на бандероли: шрифт UnifrakturMaguntia, первая буква кармином.
  * Результат кэшируется по тексту, цветам и размеру.
  */
-export function frakturWord(text: string, colors: WordColors, opts: WordOptions = {}): HTMLCanvasElement {
+export function frakturWord(
+  text: string,
+  colors: WordColors,
+  opts: WordOptions = {},
+): HTMLCanvasElement {
   const px = opts.px ?? 30;
   const family = opts.fontFamily ?? 'UnifrakturMaguntia';
   const scale = opts.scale ?? 1;
@@ -1391,7 +1571,12 @@ export function frakturWord(text: string, colors: WordColors, opts: WordOptions 
   const textW = probe.measureText(text).width;
   const band = px * scale * 1.55;
   const h = band / 0.5 + 4;
-  const ribbon: BanderoleOptions = { fill: colors.ribbon, back: colors.back, ink: colors.ink, seed: hashSeed(text) };
+  const ribbon: BanderoleOptions = {
+    fill: colors.ribbon,
+    back: colors.back,
+    ink: colors.ink,
+    seed: hashSeed(text),
+  };
   // Ширина подбирается так, чтобы текст с полями лёг в прямоугольник ленты.
   const probeBox = banderoleTextBox(1000, h, curl, ribbon);
   const w = textW + (1000 - probeBox.w) + px * scale * 0.5;
@@ -1441,7 +1626,14 @@ export interface RingOptions {
 }
 
 /** Точки дуги окружности от a0 до a1. */
-export function arcPath(cx: number, cy: number, r: number, a0: number, a1: number, step = 4): Vec[] {
+export function arcPath(
+  cx: number,
+  cy: number,
+  r: number,
+  a0: number,
+  a1: number,
+  step = 4,
+): Vec[] {
   const len = Math.abs(a1 - a0) * r;
   const n = Math.max(2, Math.ceil(len / step));
   const out: Vec[] = [];
@@ -1456,7 +1648,12 @@ export function arcPath(cx: number, cy: number, r: number, a0: number, a1: numbe
  * Расходящиеся кольца звука пером: сплошные, пунктирные или точечные.
  * Центр по умолчанию — (r, r) с запасом на толщину линии задаёт вызывающий.
  */
-export function soundRings(ctx: CanvasRenderingContext2D, r: number, style: RingStyle, opts: RingOptions = {}): void {
+export function soundRings(
+  ctx: CanvasRenderingContext2D,
+  r: number,
+  style: RingStyle,
+  opts: RingOptions = {},
+): void {
   const k = kc();
   const rng = mulberry32(opts.seed ?? 3);
   const cx = opts.cx ?? r;
@@ -1473,7 +1670,13 @@ export function soundRings(ctx: CanvasRenderingContext2D, r: number, style: Ring
     if (rr <= wMax) break;
     const fade = 1 - c * (0.6 / Math.max(1, count));
     if (style === 'solid') {
-      const pts = wobble(rng, arcPath(cx, cy, rr, 0, Math.PI * 2 - 0.0001, 3), wMax * 0.18, true, 40);
+      const pts = wobble(
+        rng,
+        arcPath(cx, cy, rr, 0, Math.PI * 2 - 0.0001, 3),
+        wMax * 0.18,
+        true,
+        40,
+      );
       nibStroke(ctx, pts, wMin, wMax, NIB_ANGLE, { closed: true, color, alpha: fade });
     } else if (style === 'dashed') {
       const dash = opts.dash ?? wMax * 5;
@@ -1496,7 +1699,13 @@ export function soundRings(ctx: CanvasRenderingContext2D, r: number, style: Ring
       for (let i = 0; i < n; i++) {
         const a = (opts.phase ?? 0) + (i / n) * Math.PI * 2;
         ctx.beginPath();
-        ctx.arc(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, wMax * (0.42 + rng() * 0.12), 0, Math.PI * 2);
+        ctx.arc(
+          cx + Math.cos(a) * rr,
+          cy + Math.sin(a) * rr,
+          wMax * (0.42 + rng() * 0.12),
+          0,
+          Math.PI * 2,
+        );
         ctx.fill();
       }
       ctx.globalAlpha /= fade;
@@ -1508,7 +1717,14 @@ export function soundRings(ctx: CanvasRenderingContext2D, r: number, style: Ring
 // ───────────────────────────── мелочи ─────────────────────────────
 
 /** Четырёхлучевая звёздочка — чернильная пометка и звёзды в окнах. */
-export function starPath(cx: number, cy: number, r: number, points = 4, inner = 0.38, rot = 0): Vec[] {
+export function starPath(
+  cx: number,
+  cy: number,
+  r: number,
+  points = 4,
+  inner = 0.38,
+  rot = 0,
+): Vec[] {
   const out: Vec[] = [];
   for (let i = 0; i < points * 2; i++) {
     const a = rot + (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
@@ -1525,11 +1741,17 @@ export function lancetPath(x: number, y: number, w: number, h: number, steps = 1
   // Дуги с центрами в противоположных пятах арки.
   for (let i = 1; i <= steps; i++) {
     const a = Math.PI + (i / steps) * (Math.PI / 3);
-    out.push({ x: x + w + Math.cos(a) * w, y: spring + Math.sin(a) * w * ((spring - y) / (w * 0.866)) });
+    out.push({
+      x: x + w + Math.cos(a) * w,
+      y: spring + Math.sin(a) * w * ((spring - y) / (w * 0.866)),
+    });
   }
   for (let i = steps - 1; i >= 0; i--) {
     const a = -(i / steps) * (Math.PI / 3);
-    out.push({ x: x + Math.cos(a) * w, y: spring + Math.sin(a) * w * ((spring - y) / (w * 0.866)) });
+    out.push({
+      x: x + Math.cos(a) * w,
+      y: spring + Math.sin(a) * w * ((spring - y) / (w * 0.866)),
+    });
   }
   out.push(v(x + w, y + h));
   return out;

@@ -130,7 +130,10 @@ function catchHero(s: GameState, m: Librarian, ev: GameEvent[]): void {
   const at = s.hero.cell;
   const cause = m.cause;
   s.stats.caught += 1;
-  const key = cause === 'error' || cause === 'squeak' || cause === 'step' || cause === 'sniff' ? cause : 'other';
+  const key =
+    cause === 'error' || cause === 'squeak' || cause === 'step' || cause === 'sniff'
+      ? cause
+      : 'other';
   s.stats.caughtBy[key] += 1;
   if (!s.debug.infiniteCards) s.hero.cards -= 1;
   const last = s.hero.cards <= 0;
@@ -236,7 +239,9 @@ function stepTowardsTarget(s: GameState, m: Librarian, ev: GameEvent[]): void {
     }
     const otherNext =
       other.mode === 'walk' || other.mode === 'run'
-        ? (other.target ? shortestPath(s.lib, other.cell, other.target)?.[0] : undefined)
+        ? other.target
+          ? shortestPath(s.lib, other.cell, other.target)?.[0]
+          : undefined
         : undefined;
     if (otherNext && sameCell(otherNext, m.cell)) {
       // Идут навстречу друг другу в узком проходе: расходятся, меняясь клетками.
@@ -246,7 +251,13 @@ function stepTowardsTarget(s: GameState, m: Librarian, ev: GameEvent[]): void {
       other.from = next;
       other.cell = mine;
       ev.push({ type: 'LIB_STEP', m: m.id, from: mine, to: next, running: m.mode === 'run' });
-      ev.push({ type: 'LIB_STEP', m: other.id, from: next, to: mine, running: other.mode === 'run' });
+      ev.push({
+        type: 'LIB_STEP',
+        m: other.id,
+        from: next,
+        to: mine,
+        running: other.mode === 'run',
+      });
       if (sameCell(m.cell, s.hero.cell) && s.status === 'playing') catchHero(s, m, ev);
       if (s.status === 'playing' && sameCell(other.cell, s.hero.cell)) catchHero(s, other, ev);
       if (s.status !== 'playing') return;

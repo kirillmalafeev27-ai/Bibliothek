@@ -33,7 +33,10 @@ describe('банк вопросов (12.1)', () => {
 
   it('немецкий текст не набран капслоком (11.2.3)', () => {
     for (const q of questions) {
-      const texts = [...(q.optionsLang === 'de' ? q.options : []), ...(q.promptLang === 'de' ? [q.prompt] : [])];
+      const texts = [
+        ...(q.optionsLang === 'de' ? q.options : []),
+        ...(q.promptLang === 'de' ? [q.prompt] : []),
+      ];
       for (const t of texts) {
         const letters = t.replace(/[^A-Za-zÄÖÜäöüß]/g, '');
         if (letters.length > 2) expect(letters).not.toBe(letters.toUpperCase());

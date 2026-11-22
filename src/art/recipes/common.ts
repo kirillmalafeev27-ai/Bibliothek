@@ -9,7 +9,11 @@ export type Pt = readonly [number, number] | readonly [number, number, number];
 /** Перевод опорных точек из долей клетки в пиксели текстуры. */
 export function cellPen(ppc: number, pts: readonly Pt[], closed = true, perSeg = 7): K.Vec[] {
   return K.pen(
-    pts.map((p) => (p.length === 3 ? ([p[0] * ppc, p[1] * ppc, p[2]] as const) : ([p[0] * ppc, p[1] * ppc] as const))),
+    pts.map((p) =>
+      p.length === 3
+        ? ([p[0] * ppc, p[1] * ppc, p[2]] as const)
+        : ([p[0] * ppc, p[1] * ppc] as const),
+    ),
     closed,
     perSeg,
   );
@@ -21,7 +25,14 @@ export function inkW(ppc: number, k = 1): number {
 }
 
 /** Короткий чернильный штрих под персонажем или предметом вместо тени (7.5.13). */
-export function contactLine(ctx: CanvasRenderingContext2D, rng: K.Rand, cx: number, cy: number, halfW: number, ppc: number): void {
+export function contactLine(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  cx: number,
+  cy: number,
+  halfW: number,
+  ppc: number,
+): void {
   const pts = K.spline(
     [
       { x: cx - halfW, y: cy + ppc * 0.004 },
@@ -40,7 +51,13 @@ export function contactLine(ctx: CanvasRenderingContext2D, rng: K.Rand, cx: numb
 }
 
 /** Залитая точка (глаз, гвоздь, заклёпка). */
-export function dot(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string = palette.ink): void {
+export function dot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  color: string = palette.ink,
+): void {
   ctx.save();
   ctx.fillStyle = color;
   ctx.beginPath();

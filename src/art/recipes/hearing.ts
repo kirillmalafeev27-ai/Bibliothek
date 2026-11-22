@@ -12,7 +12,13 @@ import { cellPen, dot, inkW } from './common';
 const GOLD_INK = palette.derived.goldInk;
 
 /** Нимб радиусом hearR: контур пером, полоса сусального золота, золотая заливка 15%. */
-export function drawHalo(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, sizeCells: number, radiusCells: number): void {
+export function drawHalo(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  sizeCells: number,
+  radiusCells: number,
+): void {
   const c = (sizeCells * ppc) / 2;
   const r = radiusCells * ppc;
   ctx.save();
@@ -36,13 +42,23 @@ export function drawHalo(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number
   const dots = Math.round((Math.PI * 2 * r) / (ppc * 0.16));
   for (let i = 0; i < dots; i++) {
     const a = (i / dots) * Math.PI * 2;
-    dot(ctx, c + Math.cos(a) * (r - ppc * 0.037), c + Math.sin(a) * (r - ppc * 0.037), ppc * 0.008, palette.gold.dark);
+    dot(
+      ctx,
+      c + Math.cos(a) * (r - ppc * 0.037),
+      c + Math.sin(a) * (r - ppc * 0.037),
+      ppc * 0.008,
+      palette.gold.dark,
+    );
   }
   // Контур пером — густым тёмным золотом.
   const ring = K.wobble(rng, K.arcPath(c, c, r, 0, Math.PI * 2 - 1e-4, 4), ppc * 0.004, true, 60);
   K.nibStroke(ctx, ring, ppc * 0.045, ppc * 0.07, K.NIB_ANGLE, { closed: true, color: GOLD_INK });
   const innerLine = K.arcPath(c, c, r - ppc * 0.012 - band, 0, Math.PI * 2 - 1e-4, 5);
-  K.nibStroke(ctx, innerLine, ppc * 0.006, ppc * 0.014, K.NIB_ANGLE, { closed: true, color: GOLD_INK, alpha: 0.8 });
+  K.nibStroke(ctx, innerLine, ppc * 0.006, ppc * 0.014, K.NIB_ANGLE, {
+    closed: true,
+    color: GOLD_INK,
+    alpha: 0.8,
+  });
 }
 
 /** Кольцо громкого слуха: тонкий золотой пунктир радиусом loudR. */
@@ -61,7 +77,11 @@ export function drawLoudRing(ctx: CanvasRenderingContext2D, radius: number, ppc:
 }
 
 /** Маникула ☞: чернильная (бродит), золотая (учуял), кармином (бежит на звук). */
-export function drawManicule(ctx: CanvasRenderingContext2D, ppc: number, tone: 'ink' | 'gold' | 'alarm'): void {
+export function drawManicule(
+  ctx: CanvasRenderingContext2D,
+  ppc: number,
+  tone: 'ink' | 'gold' | 'alarm',
+): void {
   const size = 0.92 * ppc;
   const color = tone === 'alarm' ? palette.alarm.base : palette.derived.paperWhite;
   K.manicule(ctx, size, color, {
@@ -93,15 +113,27 @@ export function drawSlipperPrint(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc
   ctx.fill();
   ctx.restore();
   // Стёжка по краю.
-  const inner = K.resample(K.transformPath(print, { sx: 0.8, sy: 0.84, ox: 0.18 * ppc, oy: 0.17 * ppc }), ppc * 0.03, true);
+  const inner = K.resample(
+    K.transformPath(print, { sx: 0.8, sy: 0.84, ox: 0.18 * ppc, oy: 0.17 * ppc }),
+    ppc * 0.03,
+    true,
+  );
   for (let i = 0; i + 1 < inner.length; i += 2) {
-    K.nibStroke(ctx, [inner[i] as K.Vec, inner[i + 1] as K.Vec], 0.5, ppc * 0.01, K.NIB_ANGLE, { color: palette.derived.paperWhite, alpha: 0.8 });
+    K.nibStroke(ctx, [inner[i] as K.Vec, inner[i + 1] as K.Vec], 0.5, ppc * 0.01, K.NIB_ANGLE, {
+      color: palette.derived.paperWhite,
+      alpha: 0.8,
+    });
   }
   K.inkOutline(ctx, rng, print, inkW(ppc, 0.3), { closed: true, pools: false, alpha: 0.7 });
 }
 
 /** След следующего шага героя: отпечаток сапога, чернильный или кармином. */
-export function drawFootPrint(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, alarm: boolean): void {
+export function drawFootPrint(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  alarm: boolean,
+): void {
   const sole = cellPen(ppc, [
     [0.23, 0.04],
     [0.31, 0.08],
@@ -127,7 +159,11 @@ export function drawFootPrint(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: n
     ctx.fillStyle = fill;
     ctx.fill();
     ctx.restore();
-    K.inkOutline(ctx, rng, part, inkW(ppc, alarm ? 0.45 : 0.3), { closed: true, pools: false, color: alarm ? palette.alarm.dark : palette.ink });
+    K.inkOutline(ctx, rng, part, inkW(ppc, alarm ? 0.45 : 0.3), {
+      closed: true,
+      pools: false,
+      color: alarm ? palette.alarm.dark : palette.ink,
+    });
   }
   if (alarm) {
     // Предостерегающие штрихи вокруг красного следа.
@@ -155,18 +191,34 @@ export function drawRouteDot(ctx: CanvasRenderingContext2D, ppc: number): void {
 
 export function drawRouteEnd(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number): void {
   const c = ppc * 0.17;
-  K.inkOutline(ctx, rng, K.ellipsePath(c, c, ppc * 0.12, ppc * 0.12, 20), inkW(ppc, 0.35), { closed: true, pools: false });
+  K.inkOutline(ctx, rng, K.ellipsePath(c, c, ppc * 0.12, ppc * 0.12, 20), inkW(ppc, 0.35), {
+    closed: true,
+    pools: false,
+  });
   dot(ctx, c, c, ppc * 0.03);
 }
 
 /** Прицел броска: чернильное перекрестие или кармин, если туда нельзя. */
-export function drawAim(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, ok: boolean): void {
+export function drawAim(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  ok: boolean,
+): void {
   const c = ppc * 0.48;
   const r = ppc * 0.36;
   const color = ok ? palette.ink : palette.alarm.base;
   if (ok) {
-    K.inkOutline(ctx, rng, K.ellipsePath(c, c, r, r, 40), inkW(ppc, 0.6), { closed: true, pools: false, color });
-    K.inkOutline(ctx, rng, K.ellipsePath(c, c, r * 0.5, r * 0.5, 30), inkW(ppc, 0.35), { closed: true, pools: false, color });
+    K.inkOutline(ctx, rng, K.ellipsePath(c, c, r, r, 40), inkW(ppc, 0.6), {
+      closed: true,
+      pools: false,
+      color,
+    });
+    K.inkOutline(ctx, rng, K.ellipsePath(c, c, r * 0.5, r * 0.5, 30), inkW(ppc, 0.35), {
+      closed: true,
+      pools: false,
+      color,
+    });
     for (let i = 0; i < 4; i++) {
       const a = (i * Math.PI) / 2;
       K.nibStroke(

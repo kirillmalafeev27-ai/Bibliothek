@@ -15,7 +15,10 @@ export interface GearHandlers {
   onPause: () => void;
 }
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className: string,
+): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   node.className = className;
   return node;
@@ -72,7 +75,13 @@ export class GearWidget {
     }
     this.cardsBox = el('div', 'lib-gear__items');
     this.cardsBox.setAttribute('role', 'img');
-    group.append(this.pagesBox, el('span', 'lib-gear__sep'), this.booksBox, el('span', 'lib-gear__sep'), this.cardsBox);
+    group.append(
+      this.pagesBox,
+      el('span', 'lib-gear__sep'),
+      this.booksBox,
+      el('span', 'lib-gear__sep'),
+      this.cardsBox,
+    );
 
     const buttons = el('div', 'lib-gear__buttons');
     this.throwBtn = iconButton('throw', ru.btnThrow, ru.btnThrowHint, '--icon-throw');
@@ -101,7 +110,10 @@ export class GearWidget {
     }
     this.el.style.setProperty('--slot', `${slot}px`);
     this.el.style.setProperty('--gear-btn', `${btn}px`);
-    this.el.style.setProperty('--gear-size', `${layout.gearPlacement === 'top' ? layout.gear.h : layout.gear.w}px`);
+    this.el.style.setProperty(
+      '--gear-size',
+      `${layout.gearPlacement === 'top' ? layout.gear.h : layout.gear.w}px`,
+    );
   }
 
   /** Центр слота листа в CSS-пикселях панели мира — туда летит подобранный лист. */

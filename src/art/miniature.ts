@@ -23,7 +23,11 @@ export function levelMiniature(level: LevelConfig): string {
       const vx = y * c;
       const vy = (lib.w - 1 - x) * c;
       let color: string = (x + y) % 2 === 0 ? palette.floor.a : palette.floor.b;
-      if (t === TILE.shelf) color = x === 0 || y === 0 || x === lib.w - 1 || y === lib.h - 1 ? palette.shelf.top : palette.shelf.wood;
+      if (t === TILE.shelf)
+        color =
+          x === 0 || y === 0 || x === lib.w - 1 || y === lib.h - 1
+            ? palette.shelf.top
+            : palette.shelf.wood;
       else if (t === TILE.squeak) color = palette.squeak.plank;
       else if (t === TILE.door) color = palette.door.light;
       ctx.fillStyle = color;
@@ -37,7 +41,10 @@ export function levelMiniature(level: LevelConfig): string {
   for (const d of lib.desks) {
     const cx = d.y * c + c / 2;
     const cy = (lib.w - 1 - d.x) * c + c / 2;
-    K.shape(ctx, rng, K.ellipsePath(cx, cy, c * 0.42, c * 0.42, 12), palette.librarian.robe, 1.4, { rim: 0, mottle: 0 });
+    K.shape(ctx, rng, K.ellipsePath(cx, cy, c * 0.42, c * 0.42, 12), palette.librarian.robe, 1.4, {
+      rim: 0,
+      mottle: 0,
+    });
   }
   K.grainOver(ctx, rng, W, H, 0.06);
   return canvas.toDataURL('image/png');

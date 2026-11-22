@@ -48,44 +48,48 @@ describe('шум и слух (2.4)', () => {
     expect(soundRadius('book', levels[0]!)).toBe(Infinity);
   });
 
-  it('радиус кольца звука совпадает с радиусом, на котором hears() отвечает «да» (8.3)', { timeout: 120_000 }, () => {
-    // Для каждого уровня, вида звука и положения библиотекаря: услышал ⇔ расстояние < radius
-    // из события SOUND — того самого, до которого расходится кольцо.
-    for (const level of levels) {
-      const probe = makeState({ level });
-      for (const cell of floorCells(probe.lib)) {
-        for (const mode of ['listen', 'walk'] as const) {
-          const hero = { x: 4, y: 5 };
-          if (cell.x === hero.x && cell.y === hero.y) continue;
-          const mk = (heroBooks = 1) =>
-            makeState({
-              level,
-              hero,
-              heroBooks,
-              librarians: [{ cell, mode, timer: 1e6, stepDur: 0 }],
-              levelPatch: { hintPreset: 'none' },
-            });
+  it(
+    'радиус кольца звука совпадает с радиусом, на котором hears() отвечает «да» (8.3)',
+    { timeout: 120_000 },
+    () => {
+      // Для каждого уровня, вида звука и положения библиотекаря: услышал ⇔ расстояние < radius
+      // из события SOUND — того самого, до которого расходится кольцо.
+      for (const level of levels) {
+        const probe = makeState({ level });
+        for (const cell of floorCells(probe.lib)) {
+          for (const mode of ['listen', 'walk'] as const) {
+            const hero = { x: 4, y: 5 };
+            if (cell.x === hero.x && cell.y === hero.y) continue;
+            const mk = (heroBooks = 1) =>
+              makeState({
+                level,
+                hero,
+                heroBooks,
+                librarians: [{ cell, mode, timer: 1e6, stepDur: 0 }],
+                levelPatch: { hintPreset: 'none' },
+              });
 
-          const check = (kind: SoundKind, events: ReturnType<typeof apply>['events']): void => {
-            const sound = ofType(events, 'SOUND').find((e) => e.kind === kind);
-            expect(sound).toBeDefined();
-            if (!sound) return;
-            expect(sound.radius).toBe(soundRadius(kind, level));
-            const d = distance(cell, sound.cell);
-            const canHearKind = kind !== 'step' || mode === 'listen';
-            expect(sound.heardBy.includes(0)).toBe(canHearKind && d < sound.radius);
-          };
+            const check = (kind: SoundKind, events: ReturnType<typeof apply>['events']): void => {
+              const sound = ofType(events, 'SOUND').find((e) => e.kind === kind);
+              expect(sound).toBeDefined();
+              if (!sound) return;
+              expect(sound.radius).toBe(soundRadius(kind, level));
+              const d = distance(cell, sound.cell);
+              const canHearKind = kind !== 'step' || mode === 'listen';
+              expect(sound.heardBy.includes(0)).toBe(canHearKind && d < sound.radius);
+            };
 
-          check('error', apply(mk(), wrong).events);
-          check('book', apply(mk(), throwTo(4, 3), correct).events);
-          // Тихий шаг: на (4,4) — если клетка свободна.
-          if (!(cell.x === 4 && cell.y === 4)) {
-            check('step', apply(mk(), moveTo(4, 4), correct).events);
+            check('error', apply(mk(), wrong).events);
+            check('book', apply(mk(), throwTo(4, 3), correct).events);
+            // Тихий шаг: на (4,4) — если клетка свободна.
+            if (!(cell.x === 4 && cell.y === 4)) {
+              check('step', apply(mk(), moveTo(4, 4), correct).events);
+            }
           }
         }
       }
-    }
-  });
+    },
+  );
 
   it('inHalo и inEarshot считаются той же функцией hears()', () => {
     const s = makeState({

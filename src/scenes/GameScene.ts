@@ -165,7 +165,12 @@ export class GameScene extends Phaser.Scene {
     this.mapper = mapper;
     const reduced = (): boolean => this.host.quality.reducedMotion;
     this.world = new WorldView(this, this.art, mapper, st, reduced);
-    this.margins = new MarginsView(this, this.art, mapper, () => reduced() || this.host.quality.low);
+    this.margins = new MarginsView(
+      this,
+      this.art,
+      mapper,
+      () => reduced() || this.host.quality.low,
+    );
     this.hearing = new HearingView(this, this.art, mapper, st);
     this.libs = st.librarians.map((m) => new LibrarianView(this, this.art, mapper, m.id));
     this.hero = new HeroView(this, this.art, mapper);
@@ -226,13 +231,19 @@ export class GameScene extends Phaser.Scene {
   worldToCss(p: Point): Point {
     const layout = this.layout;
     if (!layout) return { x: 0, y: 0 };
-    return { x: layout.board.x + (p.x / CELL) * layout.cell, y: layout.board.y + (p.y / CELL) * layout.cell };
+    return {
+      x: layout.board.x + (p.x / CELL) * layout.cell,
+      y: layout.board.y + (p.y / CELL) * layout.cell,
+    };
   }
 
   cssToWorld(p: Point): Point {
     const layout = this.layout;
     if (!layout) return { x: 0, y: 0 };
-    return { x: ((p.x - layout.board.x) / layout.cell) * CELL, y: ((p.y - layout.board.y) / layout.cell) * CELL };
+    return {
+      x: ((p.x - layout.board.x) / layout.cell) * CELL,
+      y: ((p.y - layout.board.y) / layout.cell) * CELL,
+    };
   }
 
   /** Где на экране голова героя — для подсказок и пузырей обучения. */
@@ -348,7 +359,9 @@ export class GameScene extends Phaser.Scene {
         case 'SOUND': {
           if (e.kind === 'book') {
             // Кольцо брошенного словаря расходится, когда словарь падает.
-            this.time.delayedCall(balance.view.bookArcMs, () => this.hearing?.ring(e.cell, e.kind, e.radius));
+            this.time.delayedCall(balance.view.bookArcMs, () =>
+              this.hearing?.ring(e.cell, e.kind, e.radius),
+            );
           } else if (e.kind !== 'step' || e.heardBy.length > 0) {
             // Тихий шаг даёт кольцо, только если его услышали (8.2).
             this.hearing?.ring(e.cell, e.kind, e.radius);
@@ -529,7 +542,7 @@ export class GameScene extends Phaser.Scene {
       raus: false,
     };
     this.word('ausweis', lib.headTop(), 'big', 640);
-    this.sfx('grab', prev.hero.cell);
+    this.sfx('grabHero', prev.hero.cell);
   }
 
   private updateCatch(dt: number): void {
@@ -548,8 +561,17 @@ export class GameScene extends Phaser.Scene {
     let hy = c.heroFrom.y + (target.y - c.heroFrom.y) * lift;
     if (c.t > 0.45 && !c.card) {
       const mid = { x: (lib.pos.x + hx) / 2, y: Math.min(lib.pos.y, hy) - CELL * 1.25 };
-      c.card = this.add.image(mid.x, mid.y, TEX.card.key).setScale(k * 0.2).setDepth(DEPTH.effects + 60);
-      this.tweens.add({ targets: c.card, scale: k * 1.5, angle: -6, duration: 160, ease: 'Back.easeOut' });
+      c.card = this.add
+        .image(mid.x, mid.y, TEX.card.key)
+        .setScale(k * 0.2)
+        .setDepth(DEPTH.effects + 60);
+      this.tweens.add({
+        targets: c.card,
+        scale: k * 1.5,
+        angle: -6,
+        duration: 160,
+        ease: 'Back.easeOut',
+      });
     }
     if (c.t > STAMP_AT && !c.stamped && c.card) {
       c.stamped = true;
@@ -559,7 +581,14 @@ export class GameScene extends Phaser.Scene {
         .setAlpha(0)
         .setAngle(-24)
         .setDepth(DEPTH.effects + 61);
-      this.tweens.add({ targets: c.mark, scale: k * 1.15, alpha: 1, angle: -12, duration: 130, ease: 'Cubic.easeIn' });
+      this.tweens.add({
+        targets: c.mark,
+        scale: k * 1.15,
+        alpha: 1,
+        angle: -12,
+        duration: 130,
+        ease: 'Cubic.easeIn',
+      });
       this.word('ungueltig', { x: c.card.x, y: c.card.y - CELL * 0.45 }, 'big', 560);
       juice.shake(balance.view.shake.caught);
       this.sfx('stamp');
@@ -579,7 +608,10 @@ export class GameScene extends Phaser.Scene {
       hy += (door.y - hy) * drift;
       hero.setAlpha(1 - away);
       lib.box.setAlpha(1 - away);
-      lib.place({ x: c.libFrom.x + (door.x - c.libFrom.x) * drift, y: c.libFrom.y + (door.y - c.libFrom.y) * drift });
+      lib.place({
+        x: c.libFrom.x + (door.x - c.libFrom.x) * drift,
+        y: c.libFrom.y + (door.y - c.libFrom.y) * drift,
+      });
     }
     // При последнем билете героя дальше ведёт финал «Raus!».
     if (!c.last || !c.raus) hero.place({ x: hx, y: hy }, CELL);
@@ -688,8 +720,12 @@ export class GameScene extends Phaser.Scene {
     }
     if (tl.kind === 'won') {
       // Герой выскальзывает за дверь, библиотекарь засыпает за столом.
-      world.setDoorOpen(tl.t < 1.35 ? smooth((tl.t - 0.1) / 0.25) : 1 - smooth((tl.t - 1.35) / 0.3));
-      this.fire(tl, 'word', 0.12, () => this.word(tl.near ? 'knapp' : 'geschafft', hero.headTop(), 'big', 1100));
+      world.setDoorOpen(
+        tl.t < 1.35 ? smooth((tl.t - 0.1) / 0.25) : 1 - smooth((tl.t - 1.35) / 0.3),
+      );
+      this.fire(tl, 'word', 0.12, () =>
+        this.word(tl.near ? 'knapp' : 'geschafft', hero.headTop(), 'big', 1100),
+      );
       this.fire(tl, 'cheer', 0.25, () => {
         hero.held = true;
         hero.setScript('cheer');
@@ -699,7 +735,10 @@ export class GameScene extends Phaser.Scene {
         const out = world.doorPoint(st, 0.55);
         const from = this.mapper!.at(st.lib.door, 0.5, 0.62);
         const t = smooth((tl.t - 0.25) / 0.5);
-        hero.place({ x: from.x + (out.x - from.x) * t, y: from.y + (out.y - from.y) * t }, CELL * 2);
+        hero.place(
+          { x: from.x + (out.x - from.x) * t, y: from.y + (out.y - from.y) * t },
+          CELL * 2,
+        );
         hero.setAlpha(1 - smooth((tl.t - 1.2) / 0.4));
       }
       this.fire(tl, 'sleep', 0.45, () => {
@@ -720,7 +759,14 @@ export class GameScene extends Phaser.Scene {
       });
       if (tl.t > 0.9 && this.clock - this.zzzAt > 0.55) {
         this.zzzAt = this.clock;
-        for (const l of this.libs) this.juice?.fly(TEX.zzz, l.earPoint(), { x: l.earPoint().x + CELL * 0.3, y: l.earPoint().y - CELL * 0.8 }, 900, { arc: 0.1, scaleTo: 1.4 });
+        for (const l of this.libs)
+          this.juice?.fly(
+            TEX.zzz,
+            l.earPoint(),
+            { x: l.earPoint().x + CELL * 0.3, y: l.earPoint().y - CELL * 0.8 },
+            900,
+            { arc: 0.1, scaleTo: 1.4 },
+          );
       }
       if (tl.t >= tl.dur) this.finishOutro();
       return;
@@ -733,7 +779,10 @@ export class GameScene extends Phaser.Scene {
       const out = world.doorPoint(st, 0.9);
       const from = this.hero!.pos;
       const t = smooth(tl.t / 0.6);
-      hero.place({ x: from.x + (out.x - from.x) * t * 0.35, y: from.y + (out.y - from.y) * t * 0.35 }, CELL * 2);
+      hero.place(
+        { x: from.x + (out.x - from.x) * t * 0.35, y: from.y + (out.y - from.y) * t * 0.35 },
+        CELL * 2,
+      );
       hero.setAlpha(1 - smooth((tl.t - 0.3) / 0.35));
     }
     this.fire(tl, 'slam', 0.8, () => {
@@ -761,7 +810,17 @@ export class GameScene extends Phaser.Scene {
           canvas.height = Math.round((canvas.width / w) * h);
           const ctx = canvas.getContext('2d');
           if (!ctx) return;
-          ctx.drawImage(img, Math.round(f.x * d), Math.round(f.y * d), w, h, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(
+            img,
+            Math.round(f.x * d),
+            Math.round(f.y * d),
+            w,
+            h,
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          );
           try {
             this.snapshot = canvas.toDataURL('image/jpeg', 0.86);
           } catch {
@@ -849,7 +908,12 @@ export class GameScene extends Phaser.Scene {
           cell: layout.cell,
           board: layout.board,
           librarian: cellCss(m.cell),
-          libView: this.libs[0] ? this.worldToCss({ x: this.libs[0].pos.x, y: this.libs[0].pos.y - (0.62 - 0.5) * CELL }) : null,
+          libView: this.libs[0]
+            ? this.worldToCss({
+                x: this.libs[0].pos.x,
+                y: this.libs[0].pos.y - (0.62 - 0.5) * CELL,
+              })
+            : null,
           hero: cellCss(st.hero.cell),
           target: m.target ? cellCss(m.target) : null,
           hearR: balance.hearR,
@@ -869,7 +933,10 @@ export class GameScene extends Phaser.Scene {
       shelves: this.world?.shelfAlphas() ?? [],
       orient: this.mapper?.orient ?? null,
       catching: !!this.catchAnim,
-      sameCellHero: this.round && this.hero ? sameCell(this.round.state.hero.cell, this.round.state.hero.cell) : null,
+      sameCellHero:
+        this.round && this.hero
+          ? sameCell(this.round.state.hero.cell, this.round.state.hero.cell)
+          : null,
     };
   }
 }

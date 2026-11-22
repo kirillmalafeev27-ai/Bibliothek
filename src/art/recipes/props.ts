@@ -29,11 +29,19 @@ export function drawDeskFront(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: n
   // Табличка «Ausleihe».
   const plate = K.roundRectPath(W / 2 - ppc * 0.2, ppc * 0.53, ppc * 0.4, ppc * 0.08, ppc * 0.02);
   K.shape(ctx, rng, plate, palette.derived.paperWhite, inkW(ppc, 0.3), { rim: 0, mottle: 0 });
-  K.rubric(ctx, 'Ausleihe', `600 ${Math.round(ppc * 0.06)}px "${FONT.ui}"`, palette.rubric, W / 2, ppc * 0.575, {
-    align: 'center',
-    baseline: 'middle',
-    maxWidth: ppc * 0.36,
-  });
+  K.rubric(
+    ctx,
+    'Ausleihe',
+    `600 ${Math.round(ppc * 0.06)}px "${FONT.ui}"`,
+    palette.rubric,
+    W / 2,
+    ppc * 0.575,
+    {
+      align: 'center',
+      baseline: 'middle',
+      maxWidth: ppc * 0.36,
+    },
+  );
   const top = cellPen(ppc, [
     [0.02, 0.44, 1],
     [1.08, 0.44, 1],
@@ -48,7 +56,14 @@ export function drawDeskFront(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: n
     for (let c = 0; c < 2; c++) {
       const x = ppc * (0.69 + c * 0.155);
       const y = ppc * (0.23 + r * 0.105);
-      K.shape(ctx, rng, K.rectPath(x, y, ppc * 0.13, ppc * 0.085), palette.shelf.woodLight, inkW(ppc, 0.3), { rim: 0 });
+      K.shape(
+        ctx,
+        rng,
+        K.rectPath(x, y, ppc * 0.13, ppc * 0.085),
+        palette.shelf.woodLight,
+        inkW(ppc, 0.3),
+        { rim: 0 },
+      );
       dot(ctx, x + ppc * 0.065, y + ppc * 0.045, ppc * 0.014, palette.derived.brass);
     }
   }
@@ -79,7 +94,10 @@ export function drawDeskFront(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: n
     [0.12, 0.08],
     [0.16, 0.2],
   ]);
-  K.shape(ctx, rng, quill, palette.derived.paperWhite, inkW(ppc, 0.35), { rim: 0, ink: { pools: false } });
+  K.shape(ctx, rng, quill, palette.derived.paperWhite, inkW(ppc, 0.35), {
+    rim: 0,
+    ink: { pools: false },
+  });
   // Колокольчик.
   const bell = cellPen(ppc, [
     [0.54, 0.44, 1],
@@ -108,7 +126,14 @@ export function drawDeskSide(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: nu
   K.shape(ctx, rng, side, palette.shelf.wood, lw, { rim: ppc * 0.025, streak: Math.PI / 2 });
   for (let r = 0; r < 3; r++) {
     const y = ppc * (0.54 + r * 0.12);
-    K.shape(ctx, rng, K.rectPath(ppc * 0.14, y, ppc * 0.42, ppc * 0.09), palette.shelf.woodLight, inkW(ppc, 0.35), { rim: 0 });
+    K.shape(
+      ctx,
+      rng,
+      K.rectPath(ppc * 0.14, y, ppc * 0.42, ppc * 0.09),
+      palette.shelf.woodLight,
+      inkW(ppc, 0.35),
+      { rim: 0 },
+    );
     dot(ctx, ppc * 0.35, y + ppc * 0.045, ppc * 0.014, palette.derived.brass);
   }
   const top = cellPen(ppc, [
@@ -119,9 +144,23 @@ export function drawDeskSide(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: nu
   ]);
   K.shape(ctx, rng, top, palette.shelf.woodLight, lw, { rim: ppc * 0.015 });
   const handle = K.ellipsePath(ppc * 0.42, ppc * 0.12, ppc * 0.07, ppc * 0.06, 16);
-  K.shape(ctx, rng, K.rectPath(ppc * 0.395, ppc * 0.15, ppc * 0.05, ppc * 0.15), palette.shelf.woodLight, inkW(ppc, 0.4), { rim: 0 });
+  K.shape(
+    ctx,
+    rng,
+    K.rectPath(ppc * 0.395, ppc * 0.15, ppc * 0.05, ppc * 0.15),
+    palette.shelf.woodLight,
+    inkW(ppc, 0.4),
+    { rim: 0 },
+  );
   K.shape(ctx, rng, handle, palette.shelf.wood, inkW(ppc, 0.45), { rim: 0 });
-  K.shape(ctx, rng, K.roundRectPath(ppc * 0.3, ppc * 0.29, ppc * 0.24, ppc * 0.13, ppc * 0.02), palette.shelf.woodLight, inkW(ppc, 0.5), { rim: 0 });
+  K.shape(
+    ctx,
+    rng,
+    K.roundRectPath(ppc * 0.3, ppc * 0.29, ppc * 0.24, ppc * 0.13, ppc * 0.02),
+    palette.shelf.woodLight,
+    inkW(ppc, 0.5),
+    { rim: 0 },
+  );
   const quill = cellPen(ppc, [
     [0.14, 0.4, 1],
     [0.1, 0.2],
@@ -129,8 +168,18 @@ export function drawDeskSide(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: nu
     [0.12, 0.14],
     [0.16, 0.26],
   ]);
-  K.shape(ctx, rng, K.rectPath(ppc * 0.1, ppc * 0.34, ppc * 0.08, ppc * 0.08), palette.derived.iron, inkW(ppc, 0.4), { rim: 0 });
-  K.shape(ctx, rng, quill, palette.derived.paperWhite, inkW(ppc, 0.35), { rim: 0, ink: { pools: false } });
+  K.shape(
+    ctx,
+    rng,
+    K.rectPath(ppc * 0.1, ppc * 0.34, ppc * 0.08, ppc * 0.08),
+    palette.derived.iron,
+    inkW(ppc, 0.4),
+    { rim: 0 },
+  );
+  K.shape(ctx, rng, quill, palette.derived.paperWhite, inkW(ppc, 0.35), {
+    rim: 0,
+    ink: { pools: false },
+  });
 }
 
 /** Подсвечник со свечой. */
@@ -167,8 +216,26 @@ export function drawCandle(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: numb
   );
   K.shape(ctx, rng, wax, palette.candle.wax, lw, { rim: ppc * 0.01, mottle: 0.2 });
   // Потёк воска.
-  K.nibStroke(ctx, [{ x: W * 0.6, y: H * 0.18 }, { x: W * 0.6, y: H * 0.3 }], ppc * 0.006, ppc * 0.018, K.NIB_ANGLE, { color: palette.parchmentShade });
-  K.nibStroke(ctx, [{ x: W * 0.5, y: H * 0.12 }, { x: W * 0.5, y: H * 0.05 }], ppc * 0.004, ppc * 0.01);
+  K.nibStroke(
+    ctx,
+    [
+      { x: W * 0.6, y: H * 0.18 },
+      { x: W * 0.6, y: H * 0.3 },
+    ],
+    ppc * 0.006,
+    ppc * 0.018,
+    K.NIB_ANGLE,
+    { color: palette.parchmentShade },
+  );
+  K.nibStroke(
+    ctx,
+    [
+      { x: W * 0.5, y: H * 0.12 },
+      { x: W * 0.5, y: H * 0.05 },
+    ],
+    ppc * 0.004,
+    ppc * 0.01,
+  );
 }
 
 /** Стилизованный язычок пламени — светлый, лимонный (7.1). */
@@ -187,7 +254,11 @@ export function drawFlame(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: numbe
     true,
     8,
   );
-  K.shape(ctx, rng, outer, palette.candle.flame, inkW(ppc, 0.32), { rim: 0, mottle: 0, ink: { color: palette.inkFaded, pools: false } });
+  K.shape(ctx, rng, outer, palette.candle.flame, inkW(ppc, 0.32), {
+    rim: 0,
+    mottle: 0,
+    ink: { color: palette.inkFaded, pools: false },
+  });
   const core = K.pen(
     [
       [W * 0.5, H * 0.36, 1],
@@ -230,11 +301,24 @@ export function drawDoorLeaf(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: nu
   // Доски.
   for (let i = 1; i < 5; i++) {
     const x = (W * i) / 5;
-    K.nibStroke(ctx, [{ x, y: 0 }, { x: x + (rng() - 0.5) * 2, y: H }], ppc * 0.006, ppc * 0.016, K.NIB_ANGLE, { color: palette.ink, alpha: 0.75 });
+    K.nibStroke(
+      ctx,
+      [
+        { x, y: 0 },
+        { x: x + (rng() - 0.5) * 2, y: H },
+      ],
+      ppc * 0.006,
+      ppc * 0.016,
+      K.NIB_ANGLE,
+      { color: palette.ink, alpha: 0.75 },
+    );
   }
   // Железные полосы с заклёпками.
   for (const y of [0.16, 0.44]) {
-    K.shape(ctx, rng, K.rectPath(-2, H * y, W + 4, ppc * 0.07), palette.door.iron, inkW(ppc, 0.4), { rim: 0, mottle: 0.2 });
+    K.shape(ctx, rng, K.rectPath(-2, H * y, W + 4, ppc * 0.07), palette.door.iron, inkW(ppc, 0.4), {
+      rim: 0,
+      mottle: 0.2,
+    });
     for (let i = 0; i < 6; i++) {
       dot(ctx, W * (0.1 + i * 0.16), H * y + ppc * 0.035, ppc * 0.014, palette.derived.stoneLight);
     }
@@ -243,7 +327,10 @@ export function drawDoorLeaf(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: nu
   K.inkOutline(ctx, rng, outline, lw, { closed: true });
   // Кольцо-ручка.
   const ring = K.ellipsePath(W * 0.72, H * 0.64, ppc * 0.06, ppc * 0.06, 16);
-  K.nibStroke(ctx, ring, ppc * 0.01, ppc * 0.026, K.NIB_ANGLE, { closed: true, color: palette.door.iron });
+  K.nibStroke(ctx, ring, ppc * 0.01, ppc * 0.026, K.NIB_ANGLE, {
+    closed: true,
+    color: palette.door.iron,
+  });
   dot(ctx, W * 0.72, H * 0.585, ppc * 0.02, palette.door.iron);
 }
 
@@ -282,14 +369,29 @@ export function drawFallBook(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: nu
   const W = 0.44 * ppc;
   const H = 0.4 * ppc;
   const cover = K.roundRectPath(W * 0.12, H * 0.14, W * 0.76, H * 0.72, ppc * 0.03);
-  K.shape(ctx, rng, cover, palette.spines[3] ?? palette.inkFaded, inkW(ppc, 0.5), { rim: ppc * 0.02 });
+  K.shape(ctx, rng, cover, palette.spines[3] ?? palette.inkFaded, inkW(ppc, 0.5), {
+    rim: ppc * 0.02,
+  });
   ctx.fillStyle = K.withAlpha(palette.parchment, 0.6);
   ctx.fillRect(W * 0.26, H * 0.3, W * 0.48, ppc * 0.014);
   ctx.fillRect(W * 0.26, H * 0.62, W * 0.48, ppc * 0.012);
-  K.nibStroke(ctx, [{ x: W * 0.22, y: H * 0.16 }, { x: W * 0.22, y: H * 0.84 }], ppc * 0.006, ppc * 0.014);
+  K.nibStroke(
+    ctx,
+    [
+      { x: W * 0.22, y: H * 0.16 },
+      { x: W * 0.22, y: H * 0.84 },
+    ],
+    ppc * 0.006,
+    ppc * 0.014,
+  );
 }
 
-export function drawPage(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number, piece: number): void {
+export function drawPage(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  ppc: number,
+  piece: number,
+): void {
   const S = 0.66 * ppc;
   contactLine(ctx, rng, S / 2, S * 0.9, S * 0.3, ppc);
   drawPagePiece(ctx, piece, S, true);
@@ -308,12 +410,23 @@ export function drawStampMark(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: n
   const box = K.roundRectPath(W * 0.05, H * 0.14, W * 0.9, H * 0.72, H * 0.12);
   ctx.save();
   ctx.globalAlpha = 0.92;
-  K.inkOutline(ctx, rng, box, ppc * 0.03, { closed: true, color: palette.alarm.base, pools: false, jitter: 0.9 });
-  K.inkOutline(ctx, rng, K.roundRectPath(W * 0.09, H * 0.22, W * 0.82, H * 0.56, H * 0.1), ppc * 0.012, {
+  K.inkOutline(ctx, rng, box, ppc * 0.03, {
     closed: true,
     color: palette.alarm.base,
     pools: false,
+    jitter: 0.9,
   });
+  K.inkOutline(
+    ctx,
+    rng,
+    K.roundRectPath(W * 0.09, H * 0.22, W * 0.82, H * 0.56, H * 0.1),
+    ppc * 0.012,
+    {
+      closed: true,
+      color: palette.alarm.base,
+      pools: false,
+    },
+  );
   ctx.font = `700 ${Math.round(H * 0.34)}px "${FONT.ui}"`;
   ctx.fillStyle = palette.alarm.base;
   ctx.textAlign = 'center';

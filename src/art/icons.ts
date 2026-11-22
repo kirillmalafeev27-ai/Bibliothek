@@ -23,27 +23,59 @@ export interface IconSet {
 
 const S = 96;
 
-function make(draw: (ctx: CanvasRenderingContext2D, rng: K.Rand) => void, w = S, h = S, seed = 1): string {
+function make(
+  draw: (ctx: CanvasRenderingContext2D, rng: K.Rand) => void,
+  w = S,
+  h = S,
+  seed = 1,
+): string {
   const canvas = K.makeCanvas(w, h);
   draw(K.ctx2d(canvas), K.mulberry32(seed));
   return canvas.toDataURL('image/png');
 }
 
 /** Словарь: толстая зелёная книга с латунными уголками (7.5.8). */
-export function drawBookIcon(ctx: CanvasRenderingContext2D, rng: K.Rand, x: number, y: number, w: number, h: number, label = true): void {
+export function drawBookIcon(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  label = true,
+): void {
   const lw = Math.max(1.2, w * 0.045);
   // Обрез страниц снизу.
   const pages = K.roundRectPath(x + w * 0.06, y + h * 0.62, w * 0.9, h * 0.3, w * 0.04);
   K.shape(ctx, rng, pages, palette.book.pages, lw, { rim: 1, mottle: 0.2 });
   for (let i = 1; i < 4; i++) {
     const yy = y + h * (0.66 + i * 0.06);
-    K.nibStroke(ctx, [{ x: x + w * 0.14, y: yy }, { x: x + w * 0.9, y: yy }], 0.4, Math.max(0.6, w * 0.012), K.NIB_ANGLE, { color: palette.inkFaded });
+    K.nibStroke(
+      ctx,
+      [
+        { x: x + w * 0.14, y: yy },
+        { x: x + w * 0.9, y: yy },
+      ],
+      0.4,
+      Math.max(0.6, w * 0.012),
+      K.NIB_ANGLE,
+      { color: palette.inkFaded },
+    );
   }
   // Переплёт.
   const cover = K.roundRectPath(x, y + h * 0.08, w * 0.94, h * 0.62, w * 0.06);
   K.shape(ctx, rng, cover, palette.book.cover, lw, { rim: w * 0.05, streak: 0.2 });
   // Корешок.
-  K.nibStroke(ctx, [{ x: x + w * 0.16, y: y + h * 0.12 }, { x: x + w * 0.16, y: y + h * 0.66 }], lw * 0.5, lw, K.NIB_ANGLE);
+  K.nibStroke(
+    ctx,
+    [
+      { x: x + w * 0.16, y: y + h * 0.12 },
+      { x: x + w * 0.16, y: y + h * 0.66 },
+    ],
+    lw * 0.5,
+    lw,
+    K.NIB_ANGLE,
+  );
   // Латунные уголки.
   for (const [cx, cy, sx, sy] of [
     [x + w * 0.94, y + h * 0.08, -1, 1],
@@ -57,16 +89,30 @@ export function drawBookIcon(ctx: CanvasRenderingContext2D, rng: K.Rand, x: numb
     K.shape(ctx, rng, c, palette.book.corner, lw * 0.7, { rim: 0, mottle: 0 });
   }
   if (label && w >= 40) {
-    K.rubric(ctx, 'Wörterbuch', `600 ${Math.round(w * 0.12)}px "${FONT.ui}"`, palette.take.light, x + w * 0.55, y + h * 0.44, {
-      align: 'center',
-      baseline: 'middle',
-      maxWidth: w * 0.66,
-    });
+    K.rubric(
+      ctx,
+      'Wörterbuch',
+      `600 ${Math.round(w * 0.12)}px "${FONT.ui}"`,
+      palette.take.light,
+      x + w * 0.55,
+      y + h * 0.44,
+      {
+        align: 'center',
+        baseline: 'middle',
+        maxWidth: w * 0.66,
+      },
+    );
   }
 }
 
 /** Голова героя для портрета на билете: шапочка, лицо, оранжевый шарф. */
-function drawHeroBust(ctx: CanvasRenderingContext2D, rng: K.Rand, cx: number, cy: number, s: number): void {
+function drawHeroBust(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  cx: number,
+  cy: number,
+  s: number,
+): void {
   const lw = Math.max(1, s * 0.06);
   const H = palette.hero;
   const scarf = K.pen([
@@ -96,14 +142,29 @@ function drawHeroBust(ctx: CanvasRenderingContext2D, rng: K.Rand, cx: number, cy
   }
   K.nibStroke(
     ctx,
-    K.spline([{ x: cx - s * 0.1, y: cy + s * 0.18 }, { x: cx, y: cy + s * 0.23 }, { x: cx + s * 0.1, y: cy + s * 0.18 }], false, 6),
+    K.spline(
+      [
+        { x: cx - s * 0.1, y: cy + s * 0.18 },
+        { x: cx, y: cy + s * 0.23 },
+        { x: cx + s * 0.1, y: cy + s * 0.18 },
+      ],
+      false,
+      6,
+    ),
     lw * 0.4,
     lw * 0.8,
   );
 }
 
 /** Читательский билет с портретом героя. */
-export function drawCardIcon(ctx: CanvasRenderingContext2D, rng: K.Rand, x: number, y: number, w: number, h: number): void {
+export function drawCardIcon(
+  ctx: CanvasRenderingContext2D,
+  rng: K.Rand,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): void {
   const lw = Math.max(1, w * 0.04);
   const card = K.roundRectPath(x, y, w, h, w * 0.06);
   K.shape(ctx, rng, card, palette.derived.paperWhite, lw, { rim: w * 0.03, mottle: 0.3 });
@@ -116,9 +177,19 @@ export function drawCardIcon(ctx: CanvasRenderingContext2D, rng: K.Rand, x: numb
   // Строки «заполненного» билета.
   for (let i = 0; i < 3; i++) {
     const yy = y + h * (0.3 + i * 0.2);
-    K.nibStroke(ctx, [{ x: px + ps + w * 0.08, y: yy }, { x: x + w * (0.9 - i * 0.1), y: yy }], 0.5, Math.max(0.8, w * 0.02), K.NIB_ANGLE, {
-      color: i === 0 ? palette.rubric : palette.inkFaded,
-    });
+    K.nibStroke(
+      ctx,
+      [
+        { x: px + ps + w * 0.08, y: yy },
+        { x: x + w * (0.9 - i * 0.1), y: yy },
+      ],
+      0.5,
+      Math.max(0.8, w * 0.02),
+      K.NIB_ANGLE,
+      {
+        color: i === 0 ? palette.rubric : palette.inkFaded,
+      },
+    );
   }
 }
 
@@ -132,7 +203,11 @@ function drawVoid(ctx: CanvasRenderingContext2D, rng: K.Rand, w: number, h: numb
   const box = K.roundRectPath(-bw / 2, -bh / 2, bw, bh, bh * 0.16);
   ctx.save();
   ctx.globalAlpha = 0.9;
-  K.inkOutline(ctx, rng, box, Math.max(1.5, h * 0.045), { color: palette.alarm.base, pools: false, jitter: 0.8 });
+  K.inkOutline(ctx, rng, box, Math.max(1.5, h * 0.045), {
+    color: palette.alarm.base,
+    pools: false,
+    jitter: 0.8,
+  });
   ctx.font = `700 ${Math.round(bh * 0.6)}px "${FONT.ui}"`;
   ctx.fillStyle = palette.alarm.base;
   ctx.textAlign = 'center';
@@ -152,60 +227,124 @@ function drawStar(ctx: CanvasRenderingContext2D, rng: K.Rand, on: boolean): void
 
 export function buildIcons(): IconSet {
   return {
-    page: [0, 1, 2].map((i) => make((ctx) => drawPagePiece(ctx, i, S, false), S, S, 10 + i)) as [string, string, string],
-    book: make((ctx, rng) => drawBookIcon(ctx, rng, S * 0.06, S * 0.14, S * 0.88, S * 0.72), S, S, 2),
-    card: make((ctx, rng) => drawCardIcon(ctx, rng, S * 0.04, S * 0.2, S * 0.92, S * 0.62), S, S, 3),
+    page: [0, 1, 2].map((i) => make((ctx) => drawPagePiece(ctx, i, S, false), S, S, 10 + i)) as [
+      string,
+      string,
+      string,
+    ],
+    book: make(
+      (ctx, rng) => drawBookIcon(ctx, rng, S * 0.06, S * 0.14, S * 0.88, S * 0.72),
+      S,
+      S,
+      2,
+    ),
+    card: make(
+      (ctx, rng) => drawCardIcon(ctx, rng, S * 0.04, S * 0.2, S * 0.92, S * 0.62),
+      S,
+      S,
+      3,
+    ),
     void: make((ctx, rng) => drawVoid(ctx, rng, S, S), S, S, 4),
     star: make((ctx, rng) => drawStar(ctx, rng, true), S, S, 5),
     starOff: make((ctx, rng) => drawStar(ctx, rng, false), S, S, 6),
-    throw: make((ctx, rng) => {
-      drawBookIcon(ctx, rng, S * 0.36, S * 0.42, S * 0.56, S * 0.46, false);
-      const arc = K.spline([{ x: S * 0.08, y: S * 0.86 }, { x: S * 0.24, y: S * 0.2 }, { x: S * 0.52, y: S * 0.3 }], false, 10);
-      const dashes = K.resample(arc, S * 0.08, false);
-      for (let i = 0; i + 1 < dashes.length; i += 2) K.nibStroke(ctx, [dashes[i]!, dashes[i + 1]!], 1.2, S * 0.05);
-    }, S, S, 7),
-    stay: make((ctx, rng) => {
-      // Раскрытая ладонь: «стой».
-      const palm = K.pen([
-        [S * 0.3, S * 0.92],
-        [S * 0.24, S * 0.6],
-        [S * 0.16, S * 0.42],
-        [S * 0.24, S * 0.38],
-        [S * 0.34, S * 0.52, 1],
-        [S * 0.33, S * 0.16],
-        [S * 0.42, S * 0.12],
-        [S * 0.46, S * 0.44, 1],
-        [S * 0.5, S * 0.08],
-        [S * 0.6, S * 0.08],
-        [S * 0.6, S * 0.44, 1],
-        [S * 0.66, S * 0.14],
-        [S * 0.75, S * 0.16],
-        [S * 0.72, S * 0.48, 1],
-        [S * 0.78, S * 0.28],
-        [S * 0.86, S * 0.32],
-        [S * 0.8, S * 0.66],
-        [S * 0.7, S * 0.92],
-      ]);
-      K.shape(ctx, rng, palm, palette.derived.paperWhite, S * 0.05, { rim: S * 0.03, ink: { pools: false } });
-    }, S, S, 8),
-    pause: make((ctx, rng) => {
-      for (const x of [0.3, 0.58]) {
-        K.shape(ctx, rng, K.roundRectPath(S * x, S * 0.2, S * 0.14, S * 0.6, S * 0.04), palette.ink, 0, { rim: 0 });
-      }
-    }, S, S, 9),
-    settings: make((ctx, rng) => {
-      // Перо в чернильнице — настройки.
-      const quill = K.pen([
-        [S * 0.22, S * 0.86, 1],
-        [S * 0.4, S * 0.5],
-        [S * 0.7, S * 0.14],
-        [S * 0.86, S * 0.1, 1],
-        [S * 0.8, S * 0.28],
-        [S * 0.5, S * 0.6],
-      ]);
-      K.shape(ctx, rng, quill, palette.derived.paperWhite, S * 0.045, { rim: 1, ink: { pools: false } });
-      K.nibStroke(ctx, [{ x: S * 0.24, y: S * 0.84 }, { x: S * 0.76, y: S * 0.2 }], 0.8, S * 0.025);
-    }, S, S, 12),
+    throw: make(
+      (ctx, rng) => {
+        drawBookIcon(ctx, rng, S * 0.36, S * 0.42, S * 0.56, S * 0.46, false);
+        const arc = K.spline(
+          [
+            { x: S * 0.08, y: S * 0.86 },
+            { x: S * 0.24, y: S * 0.2 },
+            { x: S * 0.52, y: S * 0.3 },
+          ],
+          false,
+          10,
+        );
+        const dashes = K.resample(arc, S * 0.08, false);
+        for (let i = 0; i + 1 < dashes.length; i += 2)
+          K.nibStroke(ctx, [dashes[i]!, dashes[i + 1]!], 1.2, S * 0.05);
+      },
+      S,
+      S,
+      7,
+    ),
+    stay: make(
+      (ctx, rng) => {
+        // Раскрытая ладонь: «стой».
+        const palm = K.pen([
+          [S * 0.3, S * 0.92],
+          [S * 0.24, S * 0.6],
+          [S * 0.16, S * 0.42],
+          [S * 0.24, S * 0.38],
+          [S * 0.34, S * 0.52, 1],
+          [S * 0.33, S * 0.16],
+          [S * 0.42, S * 0.12],
+          [S * 0.46, S * 0.44, 1],
+          [S * 0.5, S * 0.08],
+          [S * 0.6, S * 0.08],
+          [S * 0.6, S * 0.44, 1],
+          [S * 0.66, S * 0.14],
+          [S * 0.75, S * 0.16],
+          [S * 0.72, S * 0.48, 1],
+          [S * 0.78, S * 0.28],
+          [S * 0.86, S * 0.32],
+          [S * 0.8, S * 0.66],
+          [S * 0.7, S * 0.92],
+        ]);
+        K.shape(ctx, rng, palm, palette.derived.paperWhite, S * 0.05, {
+          rim: S * 0.03,
+          ink: { pools: false },
+        });
+      },
+      S,
+      S,
+      8,
+    ),
+    pause: make(
+      (ctx, rng) => {
+        for (const x of [0.3, 0.58]) {
+          K.shape(
+            ctx,
+            rng,
+            K.roundRectPath(S * x, S * 0.2, S * 0.14, S * 0.6, S * 0.04),
+            palette.ink,
+            0,
+            { rim: 0 },
+          );
+        }
+      },
+      S,
+      S,
+      9,
+    ),
+    settings: make(
+      (ctx, rng) => {
+        // Перо в чернильнице — настройки.
+        const quill = K.pen([
+          [S * 0.22, S * 0.86, 1],
+          [S * 0.4, S * 0.5],
+          [S * 0.7, S * 0.14],
+          [S * 0.86, S * 0.1, 1],
+          [S * 0.8, S * 0.28],
+          [S * 0.5, S * 0.6],
+        ]);
+        K.shape(ctx, rng, quill, palette.derived.paperWhite, S * 0.045, {
+          rim: 1,
+          ink: { pools: false },
+        });
+        K.nibStroke(
+          ctx,
+          [
+            { x: S * 0.24, y: S * 0.84 },
+            { x: S * 0.76, y: S * 0.2 },
+          ],
+          0.8,
+          S * 0.025,
+        );
+      },
+      S,
+      S,
+      12,
+    ),
   };
 }
 

@@ -251,7 +251,8 @@ export function planFor(kind: BotKind, s: GameState): Plan {
   if (!sameCell(next, s.lib.door)) {
     if (inHalo(s, next)) return { kind: 'wait' };
     for (const m of s.librarians) {
-      if (librarianPath(s, m, NO_STEP_AHEAD).some((c) => sameCell(c, next))) return { kind: 'wait' };
+      if (librarianPath(s, m, NO_STEP_AHEAD).some((c) => sameCell(c, next)))
+        return { kind: 'wait' };
     }
   }
   return { kind: 'move', cell: next, urgent: false };

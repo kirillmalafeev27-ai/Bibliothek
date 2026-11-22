@@ -68,7 +68,10 @@ export class HeroView {
     this.headPuff.setAlpha(0);
     this.arm = p(TEX.heroArm, -0.07, -0.66);
     this.carried = new Phaser.GameObjects.Image(scene, 0, 0, TEX.page0.key);
-    this.carried.setOrigin(0.5, 0.5).setScale(art.scale * 0.8).setVisible(false);
+    this.carried
+      .setOrigin(0.5, 0.5)
+      .setScale(art.scale * 0.8)
+      .setVisible(false);
     this.box.add(this.carried);
   }
 
@@ -126,7 +129,12 @@ export class HeroView {
   }
 
   footRect(): { x: number; y: number; w: number; h: number } {
-    return { x: this.pos.x - CELL * 0.26, y: this.pos.y - CELL * 0.08, w: CELL * 0.52, h: CELL * 0.16 };
+    return {
+      x: this.pos.x - CELL * 0.26,
+      y: this.pos.y - CELL * 0.08,
+      w: CELL * 0.52,
+      h: CELL * 0.16,
+    };
   }
 
   get stepping(): boolean {
@@ -155,7 +163,8 @@ export class HeroView {
     // Куда смотреть стоя: в сторону цели.
     if (state && this.stepT >= 1 && this.script === 'none' && this.throwT >= 1) {
       const it = state.hero.intent;
-      const aimCell = it.kind === 'move' ? (nextStep(state) ?? it.cell) : it.kind === 'throw' ? it.cell : null;
+      const aimCell =
+        it.kind === 'move' ? (nextStep(state) ?? it.cell) : it.kind === 'throw' ? it.cell : null;
       if (aimCell) {
         const tp = this.mapper.center(aimCell);
         if (Math.abs(tp.x - this.pos.x) > CELL * 0.3) this.facing = tp.x > this.pos.x ? 1 : -1;
@@ -172,7 +181,7 @@ export class HeroView {
     const breath = playing && inHalo(state, state.hero.cell);
     let arm = 0.12 + (reduced ? 0 : Math.sin(this.phase * 1.7) * 0.03);
     let tilt = 0;
-    let bodyDy = reduced ? 0 : Math.sin(this.phase * 2.1) * 0.006;
+    const bodyDy = reduced ? 0 : Math.sin(this.phase * 2.1) * 0.006;
     let legA = stride;
     let legB = -stride;
     if (hush) arm = ARM_HUSH;
@@ -229,7 +238,9 @@ export class HeroView {
       h.setRotation(this.tilt * 0.7 + (hush ? -0.05 : 0));
     }
     this.headPuff.setAlpha(this.puff);
-    const scarfWave = reduced ? 0 : Math.sin(this.phase * 3.1) * 0.12 + Math.sin(this.phase * 7.3) * 0.05;
+    const scarfWave = reduced
+      ? 0
+      : Math.sin(this.phase * 3.1) * 0.12 + Math.sin(this.phase * 7.3) * 0.05;
     this.scarf.setPosition((headX - 0.12) * CELL, (headY + 0.02) * CELL);
     this.scarf.setRotation(-0.12 + scarfWave + (this.stepT < 1 ? -0.35 : 0) + this.tilt * 0.5);
     const shoulderX = -0.07 + this.tilt * 0.36;

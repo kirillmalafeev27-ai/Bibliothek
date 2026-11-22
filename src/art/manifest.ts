@@ -17,7 +17,13 @@ export interface TexSpec {
   oy: number;
 }
 
-const s = (key: string, w: number, h: number, ox = 0.5, oy = 0.5): TexSpec => ({ key, w, h, ox, oy });
+const s = (key: string, w: number, h: number, ox = 0.5, oy = 0.5): TexSpec => ({
+  key,
+  w,
+  h,
+  ox,
+  oy,
+});
 
 export const TEX = {
   // ── предметы на полу и мебель ──

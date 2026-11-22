@@ -103,7 +103,13 @@ const GRAIN = new Set<string>([
 ]);
 
 /** Золотая рамка миниатюры: внешняя линия, полоса сусального золота с чеканкой, цветной филет. */
-function drawFrame(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void {
+function drawFrame(
+  ctx: CanvasRenderingContext2D,
+  cols: number,
+  rows: number,
+  thickness: number,
+  ppc: number,
+): void {
   const t = thickness * ppc;
   const W = (cols + thickness * 2) * ppc;
   const H = (rows + thickness * 2) * ppc;
@@ -139,7 +145,16 @@ function drawFrame(ctx: CanvasRenderingContext2D, cols: number, rows: number, th
   // Цветной филет: ультрамарин и киноварь чередуются, как в миниатюрах.
   fillRing(gold, fillet, () => {
     const seg = Math.max(8, ppc * 0.5);
-    const perim = K.resample(K.rectPath(gold + fillet / 2, gold + fillet / 2, W - (gold + fillet / 2) * 2, H - (gold + fillet / 2) * 2), seg, true);
+    const perim = K.resample(
+      K.rectPath(
+        gold + fillet / 2,
+        gold + fillet / 2,
+        W - (gold + fillet / 2) * 2,
+        H - (gold + fillet / 2) * 2,
+      ),
+      seg,
+      true,
+    );
     ctx.lineWidth = fillet * 1.2;
     for (let i = 0; i + 1 < perim.length; i++) {
       ctx.strokeStyle = i % 2 ? palette.librarian.robe : palette.rubric;
@@ -150,9 +165,21 @@ function drawFrame(ctx: CanvasRenderingContext2D, cols: number, rows: number, th
     }
   });
   const lw = Math.max(1, ppc * 0.018);
-  K.inkOutline(ctx, rng, K.rectPath(lw / 2, lw / 2, W - lw, H - lw), lw * 1.3, { closed: true, pools: false, jitter: 0.3 });
-  K.inkOutline(ctx, rng, K.rectPath(gold, gold, W - gold * 2, H - gold * 2), lw * 0.8, { closed: true, pools: false, jitter: 0.3 });
-  K.inkOutline(ctx, rng, K.rectPath(t - lw / 2, t - lw / 2, W - t * 2 + lw, H - t * 2 + lw), lw, { closed: true, pools: false, jitter: 0.3 });
+  K.inkOutline(ctx, rng, K.rectPath(lw / 2, lw / 2, W - lw, H - lw), lw * 1.3, {
+    closed: true,
+    pools: false,
+    jitter: 0.3,
+  });
+  K.inkOutline(ctx, rng, K.rectPath(gold, gold, W - gold * 2, H - gold * 2), lw * 0.8, {
+    closed: true,
+    pools: false,
+    jitter: 0.3,
+  });
+  K.inkOutline(ctx, rng, K.rectPath(t - lw / 2, t - lw / 2, W - t * 2 + lw, H - t * 2 + lw), lw, {
+    closed: true,
+    pools: false,
+    jitter: 0.3,
+  });
   // Угловые квадраты с ромбовым узором.
   const cs = t * 1.5;
   for (const [x, y] of [
@@ -161,13 +188,31 @@ function drawFrame(ctx: CanvasRenderingContext2D, cols: number, rows: number, th
     [0, H - cs],
     [W - cs, H - cs],
   ] as const) {
-    K.diaper(ctx, rng, { x, y, w: cs, h: cs }, { a: palette.librarian.robe, b: palette.librarian.robeDark, line: palette.gold.base, dot: palette.gold.light }, 'lozenge', cs / 2);
+    K.diaper(
+      ctx,
+      rng,
+      { x, y, w: cs, h: cs },
+      {
+        a: palette.librarian.robe,
+        b: palette.librarian.robeDark,
+        line: palette.gold.base,
+        dot: palette.gold.light,
+      },
+      'lozenge',
+      cs / 2,
+    );
     K.inkOutline(ctx, rng, K.rectPath(x, y, cs, cs), lw, { closed: true, pools: false });
   }
 }
 
 /** Маска полосы сусального золота рамки. */
-function drawFrameMask(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void {
+function drawFrameMask(
+  ctx: CanvasRenderingContext2D,
+  cols: number,
+  rows: number,
+  thickness: number,
+  ppc: number,
+): void {
   const t = thickness * ppc;
   const W = (cols + thickness * 2) * ppc;
   const H = (rows + thickness * 2) * ppc;
@@ -182,8 +227,18 @@ function drawFrameMask(ctx: CanvasRenderingContext2D, cols: number, rows: number
 function drawWord(text: string, ppc: number, cyrillic: boolean): HTMLCanvasElement {
   return K.frakturWord(
     text,
-    { initial: palette.rubric, text: palette.ink, ribbon: palette.derived.paperWhite, back: palette.parchmentShade, ink: palette.ink },
-    { px: ppc * (cyrillic ? 0.25 : 0.3), fontFamily: cyrillic ? FONT.display : FONT.fraktur, curl: 0.6 },
+    {
+      initial: palette.rubric,
+      text: palette.ink,
+      ribbon: palette.derived.paperWhite,
+      back: palette.parchmentShade,
+      ink: palette.ink,
+    },
+    {
+      px: ppc * (cyrillic ? 0.25 : 0.3),
+      fontFamily: cyrillic ? FONT.display : FONT.fraktur,
+      curl: 0.6,
+    },
   );
 }
 
@@ -198,7 +253,13 @@ export const manuscriptProvider: ArtProvider = {
   room(ctx: CanvasRenderingContext2D, room: RoomView, ppc: number, seed: number): void {
     drawRoom(ctx, room, ppc, seed);
   },
-  shelf(ctx: CanvasRenderingContext2D, dir: 'h' | 'v', len: number, ppc: number, seed: number): void {
+  shelf(
+    ctx: CanvasRenderingContext2D,
+    dir: 'h' | 'v',
+    len: number,
+    ppc: number,
+    seed: number,
+  ): void {
     drawShelf(ctx, dir, len, ppc, seed);
   },
   loudRing(ctx: CanvasRenderingContext2D, radius: number, ppc: number): void {

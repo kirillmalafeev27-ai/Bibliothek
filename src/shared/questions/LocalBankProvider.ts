@@ -90,7 +90,9 @@ export class LocalBankProvider implements QuestionProvider {
       if (q) return q;
     }
     // Банк слишком мал для всех ограничений — берём самый давний.
-    return this.questions.find((q) => !this.recent.includes(q.id)) ?? (this.questions[0] as Question);
+    return (
+      this.questions.find((q) => !this.recent.includes(q.id)) ?? (this.questions[0] as Question)
+    );
   }
 
   private refill(): void {

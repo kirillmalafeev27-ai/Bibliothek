@@ -1,62 +1,482 @@
 [
-  {"id": "art-001", "prompt": "___ Tisch", "promptLang": "de", "options": ["der", "die", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-002", "prompt": "___ Lampe", "promptLang": "de", "options": ["die", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-003", "prompt": "___ Buch", "promptLang": "de", "options": ["das", "der", "die"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-004", "prompt": "___ Stuhl", "promptLang": "de", "options": ["der", "die", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-005", "prompt": "___ Tür", "promptLang": "de", "options": ["die", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-006", "prompt": "___ Fenster", "promptLang": "de", "options": ["das", "der", "die"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-007", "prompt": "___ Schlüssel", "promptLang": "de", "options": ["der", "die", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-008", "prompt": "___ Bibliothek", "promptLang": "de", "options": ["die", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-009", "prompt": "___ Wörterbuch", "promptLang": "de", "options": ["das", "der", "die"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-010", "prompt": "___ Hund", "promptLang": "de", "options": ["der", "die", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-011", "prompt": "___ Karte", "promptLang": "de", "options": ["die", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "art-012", "prompt": "___ Mädchen", "promptLang": "de", "options": ["das", "der", "die"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-001", "prompt": "окно", "promptLang": "ru", "options": ["das Fenster", "die Tür", "der Boden", "die Wand"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-002", "prompt": "книга", "promptLang": "ru", "options": ["das Buch", "das Heft", "der Brief", "die Zeitung"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-003", "prompt": "ключ", "promptLang": "ru", "options": ["der Schlüssel", "der Löffel", "die Schüssel", "das Schloss"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-004", "prompt": "тишина", "promptLang": "ru", "options": ["die Ruhe", "die Reihe", "die Reise", "der Ruf"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-005", "prompt": "библиотека", "promptLang": "ru", "options": ["die Bibliothek", "die Buchhandlung", "die Apotheke", "das Büro"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-006", "prompt": "словарь", "promptLang": "ru", "options": ["das Wörterbuch", "das Tagebuch", "das Kochbuch", "das Lehrbuch"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-007", "prompt": "ночь", "promptLang": "ru", "options": ["die Nacht", "der Abend", "der Tag", "der Morgen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-008", "prompt": "дверь", "promptLang": "ru", "options": ["die Tür", "das Tor", "das Fenster", "die Treppe"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-009", "prompt": "ухо", "promptLang": "ru", "options": ["das Ohr", "das Auge", "die Nase", "der Mund"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-010", "prompt": "карта", "promptLang": "ru", "options": ["die Karte", "der Brief", "das Bild", "die Kerze"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-011", "prompt": "свеча", "promptLang": "ru", "options": ["die Kerze", "die Lampe", "das Licht", "das Feuer"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "tr-012", "prompt": "полка", "promptLang": "ru", "options": ["das Regal", "der Schrank", "der Tisch", "die Wand"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-001", "prompt": "du ___ (fahren)", "promptLang": "de", "options": ["fährst", "fahrst", "fährt", "fahren"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-002", "prompt": "er ___ (lesen)", "promptLang": "de", "options": ["liest", "lest", "lesen", "lese"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-003", "prompt": "ich ___ (sein)", "promptLang": "de", "options": ["bin", "bist", "ist", "sind"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-004", "prompt": "wir ___ (haben)", "promptLang": "de", "options": ["haben", "habt", "hat", "habe"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-005", "prompt": "du ___ (sprechen)", "promptLang": "de", "options": ["sprichst", "sprechst", "spricht", "sprechen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-006", "prompt": "das Kind ___ (schlafen)", "promptLang": "de", "options": ["schläft", "schlaft", "schlafen", "schläfst"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-007", "prompt": "ihr ___ (kommen)", "promptLang": "de", "options": ["kommt", "kommen", "kommst", "komme"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-008", "prompt": "er ___ (nehmen)", "promptLang": "de", "options": ["nimmt", "nehmt", "nimmst", "nehmen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-009", "prompt": "du ___ (sehen)", "promptLang": "de", "options": ["siehst", "sehst", "sieht", "seht"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-010", "prompt": "ich ___ (wissen)", "promptLang": "de", "options": ["weiß", "weißt", "wisse", "wissen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-011", "prompt": "er ___ (geben)", "promptLang": "de", "options": ["gibt", "gebt", "gibst", "geben"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "verb-012", "prompt": "du ___ (laufen)", "promptLang": "de", "options": ["läufst", "laufst", "läuft", "laufen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-001", "prompt": "mit ___ Freund", "promptLang": "de", "options": ["dem", "den", "der", "des"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-002", "prompt": "für ___ Mutter", "promptLang": "de", "options": ["die", "der", "den", "dem"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-003", "prompt": "aus ___ Haus", "promptLang": "de", "options": ["dem", "das", "den", "der"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-004", "prompt": "ohne ___ Hund", "promptLang": "de", "options": ["den", "dem", "der", "des"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-005", "prompt": "bei ___ Tante", "promptLang": "de", "options": ["der", "die", "den", "dem"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-006", "prompt": "durch ___ Park", "promptLang": "de", "options": ["den", "dem", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-007", "prompt": "nach ___ Schule", "promptLang": "de", "options": ["der", "die", "dem", "den"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-008", "prompt": "gegen ___ Wand", "promptLang": "de", "options": ["die", "der", "dem", "den"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-009", "prompt": "von ___ Freundin", "promptLang": "de", "options": ["der", "die", "den", "dem"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-010", "prompt": "um ___ Tisch", "promptLang": "de", "options": ["den", "dem", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-011", "prompt": "seit ___ Woche", "promptLang": "de", "options": ["einer", "eine", "einem", "einen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "prep-012", "prompt": "Das Buch liegt auf ___ Tisch.", "promptLang": "de", "options": ["dem", "den", "der", "das"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-001", "prompt": "das Kind → die ___", "promptLang": "de", "options": ["Kinder", "Kinde", "Kinds", "Kindern"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-002", "prompt": "das Buch → die ___", "promptLang": "de", "options": ["Bücher", "Buche", "Buchen", "Buchs"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-003", "prompt": "der Apfel → die ___", "promptLang": "de", "options": ["Äpfel", "Apfel", "Apfeln", "Äpfeln"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-004", "prompt": "die Frau → die ___", "promptLang": "de", "options": ["Frauen", "Fraus", "Fraue", "Fräuen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-005", "prompt": "das Auto → die ___", "promptLang": "de", "options": ["Autos", "Auten", "Auto", "Autoen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-006", "prompt": "der Stuhl → die ___", "promptLang": "de", "options": ["Stühle", "Stuhle", "Stühlen", "Stuhls"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-007", "prompt": "die Lampe → die ___", "promptLang": "de", "options": ["Lampen", "Lampes", "Lampe", "Lämpen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-008", "prompt": "das Haus → die ___", "promptLang": "de", "options": ["Häuser", "Hause", "Hausen", "Häusen"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-009", "prompt": "der Hund → die ___", "promptLang": "de", "options": ["Hunde", "Hünde", "Hunden", "Hunds"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-010", "prompt": "die Stadt → die ___", "promptLang": "de", "options": ["Städte", "Stadte", "Stadten", "Städten"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-011", "prompt": "der Lehrer → die ___", "promptLang": "de", "options": ["Lehrer", "Lehrers", "Lehrern", "Lehrere"], "optionsLang": "de", "correctIndex": 0},
-  {"id": "pl-012", "prompt": "das Fenster → die ___", "promptLang": "de", "options": ["Fenster", "Fenstern", "Fensters", "Fenstere"], "optionsLang": "de", "correctIndex": 0}
+  {
+    "id": "art-001",
+    "prompt": "___ Tisch",
+    "promptLang": "de",
+    "options": ["der", "die", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-002",
+    "prompt": "___ Lampe",
+    "promptLang": "de",
+    "options": ["die", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-003",
+    "prompt": "___ Buch",
+    "promptLang": "de",
+    "options": ["das", "der", "die"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-004",
+    "prompt": "___ Stuhl",
+    "promptLang": "de",
+    "options": ["der", "die", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-005",
+    "prompt": "___ Tür",
+    "promptLang": "de",
+    "options": ["die", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-006",
+    "prompt": "___ Fenster",
+    "promptLang": "de",
+    "options": ["das", "der", "die"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-007",
+    "prompt": "___ Schlüssel",
+    "promptLang": "de",
+    "options": ["der", "die", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-008",
+    "prompt": "___ Bibliothek",
+    "promptLang": "de",
+    "options": ["die", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-009",
+    "prompt": "___ Wörterbuch",
+    "promptLang": "de",
+    "options": ["das", "der", "die"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-010",
+    "prompt": "___ Hund",
+    "promptLang": "de",
+    "options": ["der", "die", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-011",
+    "prompt": "___ Karte",
+    "promptLang": "de",
+    "options": ["die", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "art-012",
+    "prompt": "___ Mädchen",
+    "promptLang": "de",
+    "options": ["das", "der", "die"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-001",
+    "prompt": "окно",
+    "promptLang": "ru",
+    "options": ["das Fenster", "die Tür", "der Boden", "die Wand"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-002",
+    "prompt": "книга",
+    "promptLang": "ru",
+    "options": ["das Buch", "das Heft", "der Brief", "die Zeitung"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-003",
+    "prompt": "ключ",
+    "promptLang": "ru",
+    "options": ["der Schlüssel", "der Löffel", "die Schüssel", "das Schloss"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-004",
+    "prompt": "тишина",
+    "promptLang": "ru",
+    "options": ["die Ruhe", "die Reihe", "die Reise", "der Ruf"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-005",
+    "prompt": "библиотека",
+    "promptLang": "ru",
+    "options": ["die Bibliothek", "die Buchhandlung", "die Apotheke", "das Büro"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-006",
+    "prompt": "словарь",
+    "promptLang": "ru",
+    "options": ["das Wörterbuch", "das Tagebuch", "das Kochbuch", "das Lehrbuch"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-007",
+    "prompt": "ночь",
+    "promptLang": "ru",
+    "options": ["die Nacht", "der Abend", "der Tag", "der Morgen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-008",
+    "prompt": "дверь",
+    "promptLang": "ru",
+    "options": ["die Tür", "das Tor", "das Fenster", "die Treppe"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-009",
+    "prompt": "ухо",
+    "promptLang": "ru",
+    "options": ["das Ohr", "das Auge", "die Nase", "der Mund"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-010",
+    "prompt": "карта",
+    "promptLang": "ru",
+    "options": ["die Karte", "der Brief", "das Bild", "die Kerze"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-011",
+    "prompt": "свеча",
+    "promptLang": "ru",
+    "options": ["die Kerze", "die Lampe", "das Licht", "das Feuer"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "tr-012",
+    "prompt": "полка",
+    "promptLang": "ru",
+    "options": ["das Regal", "der Schrank", "der Tisch", "die Wand"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-001",
+    "prompt": "du ___ (fahren)",
+    "promptLang": "de",
+    "options": ["fährst", "fahrst", "fährt", "fahren"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-002",
+    "prompt": "er ___ (lesen)",
+    "promptLang": "de",
+    "options": ["liest", "lest", "lesen", "lese"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-003",
+    "prompt": "ich ___ (sein)",
+    "promptLang": "de",
+    "options": ["bin", "bist", "ist", "sind"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-004",
+    "prompt": "wir ___ (haben)",
+    "promptLang": "de",
+    "options": ["haben", "habt", "hat", "habe"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-005",
+    "prompt": "du ___ (sprechen)",
+    "promptLang": "de",
+    "options": ["sprichst", "sprechst", "spricht", "sprechen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-006",
+    "prompt": "das Kind ___ (schlafen)",
+    "promptLang": "de",
+    "options": ["schläft", "schlaft", "schlafen", "schläfst"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-007",
+    "prompt": "ihr ___ (kommen)",
+    "promptLang": "de",
+    "options": ["kommt", "kommen", "kommst", "komme"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-008",
+    "prompt": "er ___ (nehmen)",
+    "promptLang": "de",
+    "options": ["nimmt", "nehmt", "nimmst", "nehmen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-009",
+    "prompt": "du ___ (sehen)",
+    "promptLang": "de",
+    "options": ["siehst", "sehst", "sieht", "seht"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-010",
+    "prompt": "ich ___ (wissen)",
+    "promptLang": "de",
+    "options": ["weiß", "weißt", "wisse", "wissen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-011",
+    "prompt": "er ___ (geben)",
+    "promptLang": "de",
+    "options": ["gibt", "gebt", "gibst", "geben"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "verb-012",
+    "prompt": "du ___ (laufen)",
+    "promptLang": "de",
+    "options": ["läufst", "laufst", "läuft", "laufen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-001",
+    "prompt": "mit ___ Freund",
+    "promptLang": "de",
+    "options": ["dem", "den", "der", "des"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-002",
+    "prompt": "für ___ Mutter",
+    "promptLang": "de",
+    "options": ["die", "der", "den", "dem"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-003",
+    "prompt": "aus ___ Haus",
+    "promptLang": "de",
+    "options": ["dem", "das", "den", "der"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-004",
+    "prompt": "ohne ___ Hund",
+    "promptLang": "de",
+    "options": ["den", "dem", "der", "des"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-005",
+    "prompt": "bei ___ Tante",
+    "promptLang": "de",
+    "options": ["der", "die", "den", "dem"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-006",
+    "prompt": "durch ___ Park",
+    "promptLang": "de",
+    "options": ["den", "dem", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-007",
+    "prompt": "nach ___ Schule",
+    "promptLang": "de",
+    "options": ["der", "die", "dem", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-008",
+    "prompt": "gegen ___ Wand",
+    "promptLang": "de",
+    "options": ["die", "der", "dem", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-009",
+    "prompt": "von ___ Freundin",
+    "promptLang": "de",
+    "options": ["der", "die", "den", "dem"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-010",
+    "prompt": "um ___ Tisch",
+    "promptLang": "de",
+    "options": ["den", "dem", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-011",
+    "prompt": "seit ___ Woche",
+    "promptLang": "de",
+    "options": ["einer", "eine", "einem", "einen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "prep-012",
+    "prompt": "Das Buch liegt auf ___ Tisch.",
+    "promptLang": "de",
+    "options": ["dem", "den", "der", "das"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-001",
+    "prompt": "das Kind → die ___",
+    "promptLang": "de",
+    "options": ["Kinder", "Kinde", "Kinds", "Kindern"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-002",
+    "prompt": "das Buch → die ___",
+    "promptLang": "de",
+    "options": ["Bücher", "Buche", "Buchen", "Buchs"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-003",
+    "prompt": "der Apfel → die ___",
+    "promptLang": "de",
+    "options": ["Äpfel", "Apfel", "Apfeln", "Äpfeln"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-004",
+    "prompt": "die Frau → die ___",
+    "promptLang": "de",
+    "options": ["Frauen", "Fraus", "Fraue", "Fräuen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-005",
+    "prompt": "das Auto → die ___",
+    "promptLang": "de",
+    "options": ["Autos", "Auten", "Auto", "Autoen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-006",
+    "prompt": "der Stuhl → die ___",
+    "promptLang": "de",
+    "options": ["Stühle", "Stuhle", "Stühlen", "Stuhls"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-007",
+    "prompt": "die Lampe → die ___",
+    "promptLang": "de",
+    "options": ["Lampen", "Lampes", "Lampe", "Lämpen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-008",
+    "prompt": "das Haus → die ___",
+    "promptLang": "de",
+    "options": ["Häuser", "Hause", "Hausen", "Häusen"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-009",
+    "prompt": "der Hund → die ___",
+    "promptLang": "de",
+    "options": ["Hunde", "Hünde", "Hunden", "Hunds"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-010",
+    "prompt": "die Stadt → die ___",
+    "promptLang": "de",
+    "options": ["Städte", "Stadte", "Stadten", "Städten"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-011",
+    "prompt": "der Lehrer → die ___",
+    "promptLang": "de",
+    "options": ["Lehrer", "Lehrers", "Lehrern", "Lehrere"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "pl-012",
+    "prompt": "das Fenster → die ___",
+    "promptLang": "de",
+    "options": ["Fenster", "Fenstern", "Fensters", "Fenstere"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  }
 ]

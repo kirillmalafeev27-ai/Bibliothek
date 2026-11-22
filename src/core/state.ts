@@ -54,9 +54,7 @@ export interface Librarian {
 }
 
 export type Intent =
-  | { kind: 'stay' }
-  | { kind: 'move'; cell: Cell }
-  | { kind: 'throw'; cell: Cell };
+  { kind: 'stay' } | { kind: 'move'; cell: Cell } | { kind: 'throw'; cell: Cell };
 
 export const STAY: Intent = { kind: 'stay' };
 

@@ -61,7 +61,11 @@ export function throwTargets(s: GameState): Cell[] {
   for (let y = 0; y < s.lib.h; y++) {
     for (let x = 0; x < s.lib.w; x++) {
       const c = { x, y };
-      if (isFloor(s.lib, x, y) && !sameCell(c, s.hero.cell) && distance(c, s.hero.cell) < balance.throwR) {
+      if (
+        isFloor(s.lib, x, y) &&
+        !sameCell(c, s.hero.cell) &&
+        distance(c, s.hero.cell) < balance.throwR
+      ) {
         out.push(c);
       }
     }

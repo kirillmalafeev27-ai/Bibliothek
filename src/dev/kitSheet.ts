@@ -30,7 +30,17 @@ export async function showKitSheet(root: HTMLElement): Promise<void> {
     K.nibStroke(ctx, pts, 1 + i * 0.6, 3 + i * 1.8);
   }
   K.inkOutline(ctx, rng, K.ellipsePath(430, 110, 60, 46, 60), 5);
-  K.inkOutline(ctx, rng, K.pen([[520, 60, 1], [620, 60, 1], [620, 160, 1], [520, 160, 1]]), 5);
+  K.inkOutline(
+    ctx,
+    rng,
+    K.pen([
+      [520, 60, 1],
+      [620, 60, 1],
+      [620, 160, 1],
+      [520, 160, 1],
+    ]),
+    5,
+  );
   K.inkOutline(ctx, rng, K.blob(rng, 110, 100, { cx: 720, cy: 110, jitter: 0.2 }), 6);
 
   // Темпера.
@@ -60,9 +70,28 @@ export async function showKitSheet(root: HTMLElement): Promise<void> {
   K.goldShape(ctx, rng, K.lancetPath(470, 378, 70, 100), 4, { punch: 8 });
   ctx.save();
   ctx.translate(580, 378);
-  K.diaper(ctx, rng, { x: 0, y: 0, w: 120, h: 100 }, { a: palette.librarian.robe, b: palette.window.night, line: palette.gold.base, dot: palette.gold.light }, 'lozenge', 16);
+  K.diaper(
+    ctx,
+    rng,
+    { x: 0, y: 0, w: 120, h: 100 },
+    {
+      a: palette.librarian.robe,
+      b: palette.window.night,
+      line: palette.gold.base,
+      dot: palette.gold.light,
+    },
+    'lozenge',
+    16,
+  );
   ctx.translate(140, 0);
-  K.diaper(ctx, rng, { x: 0, y: 0, w: 120, h: 100 }, { a: palette.rubric, b: palette.alarm.dark, line: palette.gold.base, dot: palette.gold.light }, 'check', 14);
+  K.diaper(
+    ctx,
+    rng,
+    { x: 0, y: 0, w: 120, h: 100 },
+    { a: palette.rubric, b: palette.alarm.dark, line: palette.gold.base, dot: palette.gold.light },
+    'check',
+    14,
+  );
   ctx.restore();
 
   // Лоза.
@@ -78,7 +107,15 @@ export async function showKitSheet(root: HTMLElement): Promise<void> {
     false,
     10,
   );
-  K.vine(ctx, rng, stem2, { stem: 1.4, every: 26, curl: 10, leaf: 8, gold: false, buds: false, alpha: 0.7 });
+  K.vine(ctx, rng, stem2, {
+    stem: 1.4,
+    every: 26,
+    curl: 10,
+    leaf: 8,
+    gold: false,
+    buds: false,
+    alpha: 0.7,
+  });
 
   // Бандероли и слова.
   label('banderole / frakturWord', 30, 730);
@@ -86,7 +123,11 @@ export async function showKitSheet(root: HTMLElement): Promise<void> {
   let wx = 30;
   let wy = 750;
   for (const w of words) {
-    const c = K.frakturWord(w, { initial: palette.rubric, text: palette.ink }, { px: 34, scale: 1 });
+    const c = K.frakturWord(
+      w,
+      { initial: palette.rubric, text: palette.ink },
+      { px: 34, scale: 1 },
+    );
     if (wx + c.width > W - 30) {
       wx = 30;
       wy += c.height + 6;
@@ -115,9 +156,26 @@ export async function showKitSheet(root: HTMLElement): Promise<void> {
 
   // Кольца.
   label('soundRings', 760, 960);
-  K.soundRings(ctx, 110, 'solid', { cx: 880, cy: 1090, color: palette.derived.goldInk, wMax: 6, count: 3, spacing: 22 });
-  K.soundRings(ctx, 110, 'dashed', { cx: 1070, cy: 1090, color: palette.derived.alarmInk, wMax: 5 });
-  K.soundRings(ctx, 70, 'dotted', { cx: 1070, cy: 1090, color: palette.derived.ultramarine, wMax: 5 });
+  K.soundRings(ctx, 110, 'solid', {
+    cx: 880,
+    cy: 1090,
+    color: palette.derived.goldInk,
+    wMax: 6,
+    count: 3,
+    spacing: 22,
+  });
+  K.soundRings(ctx, 110, 'dashed', {
+    cx: 1070,
+    cy: 1090,
+    color: palette.derived.alarmInk,
+    wMax: 5,
+  });
+  K.soundRings(ctx, 70, 'dotted', {
+    cx: 1070,
+    cy: 1090,
+    color: palette.derived.ultramarine,
+    wMax: 5,
+  });
 
   // Пергамент без швов.
   label('parchment (tile ×2)', 30, 1230);
@@ -126,7 +184,14 @@ export async function showKitSheet(root: HTMLElement): Promise<void> {
   ctx.drawImage(tile, 30 + 256 * 0.9, 1244, 256 * 0.9, 256 * 0.9);
   K.rubric(ctx, 'Der blinde Bibliothekar', `52px "${FONT.fraktur}"`, palette.ink, 560, 1320);
   K.rubric(ctx, 'Слепой библиотекарь', `48px "${FONT.display}"`, palette.rubric, 560, 1390);
-  K.rubric(ctx, 'Ответ — шаг · Тихо: ошибку услышит', `600 22px "${FONT.ui}"`, undefined, 560, 1440);
+  K.rubric(
+    ctx,
+    'Ответ — шаг · Тихо: ошибку услышит',
+    `600 22px "${FONT.ui}"`,
+    undefined,
+    560,
+    1440,
+  );
 
   page.style.cssText = 'display:block;max-width:none;';
   root.style.overflow = 'auto';

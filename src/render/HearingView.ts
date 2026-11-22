@@ -63,18 +63,29 @@ export class HearingView {
   ) {
     const k = art.scale;
     const img = (spec: TexSpec, depth: number): Phaser.GameObjects.Image =>
-      scene.add.image(0, 0, spec.key).setOrigin(spec.ox, spec.oy).setScale(k).setDepth(depth).setVisible(false);
+      scene.add
+        .image(0, 0, spec.key)
+        .setOrigin(spec.ox, spec.oy)
+        .setScale(k)
+        .setDepth(depth)
+        .setVisible(false);
 
     const loudKey = art.loudRing(state.level.loudR);
     for (let i = 0; i < state.librarians.length; i++) {
       this.halos.push({ image: img(TEX.halo, DEPTH.onFloor + 1), on: 0 });
       this.loud.push(
-        scene.add.image(0, 0, loudKey).setOrigin(0.5, 0.5).setScale(k).setDepth(DEPTH.onFloor + 2).setVisible(false),
+        scene.add
+          .image(0, 0, loudKey)
+          .setOrigin(0.5, 0.5)
+          .setScale(k)
+          .setDepth(DEPTH.onFloor + 2)
+          .setVisible(false),
       );
       this.hands.push(img(TEX.manInk, DEPTH.top + 10 + i));
       this.handTone.push('ink');
       const row: Phaser.GameObjects.Image[] = [];
-      for (let j = 0; j < balance.view.slipperPrints; j++) row.push(img(TEX.slipper, DEPTH.onFloor + 4));
+      for (let j = 0; j < balance.view.slipperPrints; j++)
+        row.push(img(TEX.slipper, DEPTH.onFloor + 4));
       this.prints.push(row);
     }
     this.foot = img(TEX.footInk, DEPTH.onFloor + 6);
@@ -107,7 +118,14 @@ export class HearingView {
         : kind === 'step'
           ? hex(palette.derived.goldInk)
           : hex(palette.derived.alarmInk);
-    this.rings.push({ x: p.x, y: p.y, radius, color, age: 0, width: kind === 'book' ? 0.07 : 0.095 });
+    this.rings.push({
+      x: p.x,
+      y: p.y,
+      radius,
+      color,
+      age: 0,
+      width: kind === 'book' ? 0.07 : 0.095,
+    });
     // Колец звука — не больше 6 одновременно (13.6.1).
     while (this.rings.length > balance.view.maxSoundRings) this.rings.shift();
   }
@@ -129,7 +147,15 @@ export class HearingView {
   }
 
   /** Кольцо пером: толщина зависит от направления штриха. */
-  private nibRing(x: number, y: number, r: number, wMin: number, wMax: number, color: number, alpha: number): void {
+  private nibRing(
+    x: number,
+    y: number,
+    r: number,
+    wMin: number,
+    wMax: number,
+    color: number,
+    alpha: number,
+  ): void {
     if (r <= wMax || alpha <= 0.01) return;
     const outer: Phaser.Math.Vector2[] = [];
     const inner: Phaser.Math.Vector2[] = [];
@@ -217,7 +243,13 @@ export class HearingView {
       }
       if (this.handTone[i] !== hint.tone) {
         this.handTone[i] = hint.tone;
-        image.setTexture(hint.tone === 'ink' ? TEX.manInk.key : hint.tone === 'gold' ? TEX.manGold.key : TEX.manAlarm.key);
+        image.setTexture(
+          hint.tone === 'ink'
+            ? TEX.manInk.key
+            : hint.tone === 'gold'
+              ? TEX.manGold.key
+              : TEX.manAlarm.key,
+        );
       }
       const v = this.mapper.toView(hint.cell);
       // Рука тянется снизу-сбоку и указывает на нижний угол клетки: героя не закрывает.
@@ -263,7 +295,10 @@ export class HearingView {
         for (const f of last ? [0.5] : [0.5, 1]) {
           const dot = this.dots[used++];
           if (!dot) break;
-          dot.setVisible(true).setPosition(prev.x + (cur.x - prev.x) * f, prev.y + (cur.y - prev.y) * f).setAlpha(0.5);
+          dot
+            .setVisible(true)
+            .setPosition(prev.x + (cur.x - prev.x) * f, prev.y + (cur.y - prev.y) * f)
+            .setAlpha(0.5);
         }
         if (last) this.routeEnd.setVisible(true).setPosition(cur.x, cur.y).setAlpha(0.7);
         prev = cur;
@@ -286,7 +321,8 @@ export class HearingView {
       }
       const t = Math.min(1, ring.age / grow);
       const ease = 1 - Math.pow(1 - t, 2.2);
-      const fade = ring.age <= grow + RING_HOLD_MS ? 1 : 1 - (ring.age - grow - RING_HOLD_MS) / RING_FADE_MS;
+      const fade =
+        ring.age <= grow + RING_HOLD_MS ? 1 : 1 - (ring.age - grow - RING_HOLD_MS) / RING_FADE_MS;
       const wMax = ring.width * CELL;
       const wMin = wMax * 0.7;
       const r = reduced ? ring.radius : ring.radius * ease;
@@ -294,14 +330,23 @@ export class HearingView {
       // Два догоняющих кольца потоньше.
       for (let n = 1; n <= 2; n++) {
         const lag = r - n * CELL * 0.34 * (0.4 + 0.6 * ease);
-        this.nibRing(ring.x, ring.y, lag, wMin * 0.7, wMax * 0.62, ring.color, fade * (0.55 - n * 0.17));
+        this.nibRing(
+          ring.x,
+          ring.y,
+          lag,
+          wMin * 0.7,
+          wMax * 0.62,
+          ring.color,
+          fade * (0.55 - n * 0.17),
+        );
       }
     }
   }
 
   destroy(): void {
     for (const h of this.halos) h.image.destroy();
-    for (const image of [...this.loud, ...this.hands, ...this.prints.flat(), ...this.dots]) image.destroy();
+    for (const image of [...this.loud, ...this.hands, ...this.prints.flat(), ...this.dots])
+      image.destroy();
     this.foot.destroy();
     this.footRed.destroy();
     this.routeEnd.destroy();
