@@ -65,9 +65,11 @@ export interface MountOptions {
   audio?: GameAudio;
   /** Dev-режим: отладочная панель по клавише `. */
   dev?: boolean;
+  /** Сцена теста читаемости слуха (8.4): застывший кадр без вопросов. */
+  hearingTest?: boolean;
 }
 
-type Phase = 'boot' | 'menu' | 'intro' | 'play' | 'outro' | 'results';
+type Phase = 'boot' | 'menu' | 'intro' | 'play' | 'outro' | 'results' | 'test';
 
 const THEME: ThemeColors = {
   parchment: palette.parchment,
@@ -267,7 +269,8 @@ export class GameApp {
     this.scene = this.game.scene.getScene('Game') as GameScene;
     this.relayout();
     this.screens.clear();
-    if (this.options.level !== undefined) this.startLevel(this.options.level);
+    if (this.options.hearingTest) this.startHearingTest();
+    else if (this.options.level !== undefined) this.startLevel(this.options.level);
     else this.showMenu();
   }
 
@@ -304,6 +307,55 @@ export class GameApp {
   private applyMotion(): void {
     this.root.dataset.motion = this.quality.reducedMotion ? 'reduced' : 'full';
     this.root.dataset.quality = this.quality.level;
+  }
+
+  // ─────────────── тест читаемости слуха (8.4) ───────────────
+
+  /**
+   * Застывший кадр: библиотекарь слушает в открытом зале на плитке обоих тонов,
+   * вокруг кольцо громкого слуха, рядом кольцо ошибки у героя и маникула.
+   */
+  private startHearingTest(): void {
+    const level = levelById(3);
+    const round = new Round(level, 7);
+    const st = round.state;
+    const w = st.lib.w;
+    const h = st.lib.h;
+    const tiles = st.lib.tiles.map((t, i) => {
+      const x = i % w;
+      const y = Math.floor(i / w);
+      const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1;
+      return edge ? t : 0;
+    }) as typeof st.lib.tiles;
+    const lib = { ...st.lib, tiles, desks: [{ x: 1, y: 1 }] };
+    round.state = {
+      ...st,
+      lib,
+      pages: [],
+      books: [],
+      hero: { ...st.hero, cell: { x: 4, y: 8 } },
+      librarians: [
+        {
+          ...st.librarians[0]!,
+          cell: { x: 4, y: 5 },
+          desk: { x: 1, y: 1 },
+          mode: 'listen',
+          timer: 1e9,
+          atWaypoint: false,
+          target: { x: 7, y: 3 },
+          stepDur: 0,
+          from: null,
+        },
+      ],
+    };
+    this.round = round;
+    this.phase = 'test';
+    this.panel.showNote('Тест читаемости слуха');
+    this.scene?.attach(round, { mode: 'play', doorSide: 'right' });
+    const probe = this.scene?.hearingProbe();
+    probe?.freeze(true);
+    probe?.ring({ x: 4, y: 8 }, 'error', level.loudR);
+    (window as unknown as { __hearing?: unknown }).__hearing = probe;
   }
 
   // ─────────────── меню и уровни ───────────────

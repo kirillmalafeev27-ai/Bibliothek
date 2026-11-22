@@ -40,7 +40,7 @@ export function drawHalo(ctx: CanvasRenderingContext2D, rng: K.Rand, ppc: number
   }
   // Контур пером — густым тёмным золотом.
   const ring = K.wobble(rng, K.arcPath(c, c, r, 0, Math.PI * 2 - 1e-4, 4), ppc * 0.004, true, 60);
-  K.nibStroke(ctx, ring, ppc * 0.026, ppc * 0.05, K.NIB_ANGLE, { closed: true, color: GOLD_INK });
+  K.nibStroke(ctx, ring, ppc * 0.045, ppc * 0.07, K.NIB_ANGLE, { closed: true, color: GOLD_INK });
   const innerLine = K.arcPath(c, c, r - ppc * 0.012 - band, 0, Math.PI * 2 - 1e-4, 5);
   K.nibStroke(ctx, innerLine, ppc * 0.006, ppc * 0.014, K.NIB_ANGLE, { closed: true, color: GOLD_INK, alpha: 0.8 });
 }
@@ -52,19 +52,12 @@ export function drawLoudRing(ctx: CanvasRenderingContext2D, radius: number, ppc:
     cx: c,
     cy: c,
     color: GOLD_INK,
-    wMax: ppc * 0.042,
-    wMin: ppc * 0.02,
-    dash: ppc * 0.2,
+    wMax: ppc * 0.06,
+    wMin: ppc * 0.04,
+    dash: ppc * 0.22,
     gap: ppc * 0.12,
     seed: Math.round(radius * 10),
   });
-  // Золотые точки между штрихами — чтобы пунктир читался как золото.
-  const r = radius * ppc;
-  const n = Math.max(6, Math.round((Math.PI * 2 * r) / (ppc * 0.32)));
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 + ((0.2 / (0.32)) * Math.PI * 2) / n;
-    dot(ctx, c + Math.cos(a) * r, c + Math.sin(a) * r, ppc * 0.016, palette.gold.base);
-  }
 }
 
 /** Маникула ☞: чернильная (бродит), золотая (учуял), кармином (бежит на звук). */
@@ -74,7 +67,7 @@ export function drawManicule(ctx: CanvasRenderingContext2D, ppc: number, tone: '
   K.manicule(ctx, size, color, {
     goldFill: tone === 'gold',
     ink: palette.ink,
-    line: inkW(ppc, 0.85),
+    line: inkW(ppc, 1.65),
     cuff: tone === 'alarm' ? palette.alarm.light : palette.derived.paperWhite,
     seed: tone === 'ink' ? 11 : tone === 'gold' ? 12 : 13,
   });

@@ -820,6 +820,46 @@ export class GameScene extends Phaser.Scene {
     this.cleanups.length = 0;
   }
 
+  /**
+   * Тест читаемости слуха (8.4): застывшие кольца, управление видимостью элементов
+   * и геометрия в CSS-пикселях панели мира.
+   */
+  hearingProbe(): {
+    freeze: (on: boolean) => void;
+    ring: (cell: Cell, kind: 'error' | 'squeak' | 'step' | 'book', radius: number) => void;
+    show: (what: 'halo' | 'loud' | 'rings' | 'hands' | 'prints', on: boolean) => void;
+    geometry: () => Record<string, unknown>;
+  } {
+    const h = this.hearing;
+    return {
+      freeze: (on) => {
+        if (h) h.freeze = on;
+      },
+      ring: (cell, kind, radius) => h?.ring(cell, kind, radius),
+      show: (what, on) => {
+        if (h) h.show[what] = on;
+      },
+      geometry: () => {
+        const layout = this.layout;
+        const st = this.round?.state;
+        if (!layout || !st || !this.mapper) return {};
+        const m = st.librarians[0]!;
+        const cellCss = (c: Cell): Point => this.worldToCss(this.mapper!.center(c));
+        return {
+          cell: layout.cell,
+          board: layout.board,
+          librarian: cellCss(m.cell),
+          libView: this.libs[0] ? this.worldToCss({ x: this.libs[0].pos.x, y: this.libs[0].pos.y - (0.62 - 0.5) * CELL }) : null,
+          hero: cellCss(st.hero.cell),
+          target: m.target ? cellCss(m.target) : null,
+          hearR: balance.hearR,
+          loudR: st.level.loudR,
+          mapperOrient: this.mapper.orient,
+        };
+      },
+    };
+  }
+
   /** Для отладки и тестов: что сейчас на экране. */
   debugInfo(): Record<string, unknown> {
     return {

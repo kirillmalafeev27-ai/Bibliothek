@@ -50,6 +50,10 @@ export class HearingView {
   private readonly rects: WorldRect[] = [];
   private time = 0;
   private handTone: string[] = [];
+  /** Тест читаемости: кольца звука застывают на полном радиусе. */
+  freeze = false;
+  /** Тест читаемости: что показывать. */
+  readonly show = { halo: true, loud: true, rings: true, hands: true, prints: true };
 
   constructor(
     scene: Phaser.Scene,
@@ -103,7 +107,7 @@ export class HearingView {
         : kind === 'step'
           ? hex(palette.derived.goldInk)
           : hex(palette.derived.alarmInk);
-    this.rings.push({ x: p.x, y: p.y, radius, color, age: 0, width: kind === 'book' ? 0.07 : 0.085 });
+    this.rings.push({ x: p.x, y: p.y, radius, color, age: 0, width: kind === 'book' ? 0.07 : 0.095 });
     // Колец звука — не больше 6 одновременно (13.6.1).
     while (this.rings.length > balance.view.maxSoundRings) this.rings.shift();
   }
@@ -155,7 +159,7 @@ export class HearingView {
       const want = playing && isListening(m) ? 1 : 0;
       const tau = (want ? balance.view.haloInMs : balance.view.haloOutMs) / 1000 / 3;
       halo.on = reduced ? want : approach(halo.on, want, dt, tau);
-      if (halo.on < 0.01) {
+      if (halo.on < 0.01 || !this.show.halo) {
         halo.image.setVisible(false);
       } else {
         const c = this.mapper.center(m.cell);
@@ -170,7 +174,7 @@ export class HearingView {
       // Кольцо громкого слуха: тонкий золотой пунктир радиусом loudR.
       const ring = this.loud[i]!;
       const view = views[i];
-      if (state.hints.loudRing && view && playing) {
+      if (state.hints.loudRing && view && playing && this.show.loud) {
         ring
           .setVisible(true)
           .setPosition(view.pos.x, view.pos.y - (ANCHOR.feet - 0.5) * CELL)
@@ -207,7 +211,7 @@ export class HearingView {
     for (let i = 0; i < this.hands.length; i++) {
       const image = this.hands[i]!;
       const hint = hands.find((h) => h.m === i);
-      if (!hint) {
+      if (!hint || !this.show.hands) {
         image.setVisible(false);
         continue;
       }
@@ -229,7 +233,7 @@ export class HearingView {
         .setFlipX(fromRight)
         .setPosition(tipX, tipY)
         .setRotation(dir * -0.62)
-        .setScale(k * 0.86 * grow);
+        .setScale(k * 0.94 * grow);
     }
 
     // След следующего шага героя и тихий пунктир маршрута.
@@ -273,6 +277,8 @@ export class HearingView {
     for (let i = this.rings.length - 1; i >= 0; i--) {
       const ring = this.rings[i]!;
       ring.age += dt * 1000;
+      if (this.freeze) ring.age = Math.min(ring.age, grow + 1);
+      if (!this.show.rings) continue;
       const total = grow + RING_HOLD_MS + RING_FADE_MS;
       if (ring.age >= total) {
         this.rings.splice(i, 1);
@@ -282,7 +288,7 @@ export class HearingView {
       const ease = 1 - Math.pow(1 - t, 2.2);
       const fade = ring.age <= grow + RING_HOLD_MS ? 1 : 1 - (ring.age - grow - RING_HOLD_MS) / RING_FADE_MS;
       const wMax = ring.width * CELL;
-      const wMin = wMax * 0.42;
+      const wMin = wMax * 0.7;
       const r = reduced ? ring.radius : ring.radius * ease;
       this.nibRing(ring.x, ring.y, r, wMin, wMax, ring.color, fade);
       // Два догоняющих кольца потоньше.

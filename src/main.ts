@@ -42,6 +42,7 @@ async function start(container: HTMLElement): Promise<void> {
     art,
     level: levelParam ? Number(levelParam) : undefined,
     dev: import.meta.env.DEV,
+    hearingTest: scene === 'hearing',
   });
   (window as unknown as { __lib?: GameApp }).__lib = app;
 }
