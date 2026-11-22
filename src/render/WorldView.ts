@@ -7,6 +7,7 @@ import type { ArtFactory } from '../art/ArtFactory';
 import type { TexSpec } from '../art/manifest';
 import { ANCHOR, CELL, DEPTH, SHELF, TEX } from '../art/manifest';
 import { balance } from '../config/balance';
+import { hex, palette } from '../config/palette';
 import type { Cell, GameState } from '../core';
 import { sameCell } from '../core';
 import * as K from '../shared/manuscriptKit';
@@ -39,8 +40,12 @@ interface FloorItem {
 
 const ROOM_KEY = 'room';
 
-function intersects(a: WorldRect, b: WorldRect): boolean {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+/** Скрыта ли за полосой `cover` заметная часть прямоугольника `r` (больше четверти). */
+function hiddenBehind(cover: WorldRect, r: WorldRect): boolean {
+  const w = Math.min(cover.x + cover.w, r.x + r.w) - Math.max(cover.x, r.x);
+  const h = Math.min(cover.y + cover.h, r.y + r.h) - Math.max(cover.y, r.y);
+  if (w <= 0 || h <= 0) return false;
+  return w * h >= r.w * r.h * 0.25;
 }
 
 export class WorldView {
@@ -50,6 +55,14 @@ export class WorldView {
   private readonly items = new Map<string, FloorItem>();
   private readonly flames: Phaser.GameObjects.Image[] = [];
   private doorLeaf: Phaser.GameObjects.Image | null = null;
+  private doorLight: Phaser.GameObjects.Image | null = null;
+  private readonly twinkles: { image: Phaser.GameObjects.Image; phase: number; rate: number }[] = [];
+  private glint: Phaser.GameObjects.Image | null = null;
+  private glintMask: Phaser.GameObjects.Image | null = null;
+  private glintFilter: { needsUpdate: boolean } | null = null;
+  private glintT = -1;
+  private glintWait = 2;
+  private frameThickness = 0;
   private doorOpen = 0;
   private frameImage: Phaser.GameObjects.Image | null = null;
   private time = 0;
@@ -109,6 +122,24 @@ export class WorldView {
     // Дверь: створка «развёрнута наружу» на своей стене.
     this.addDoor(state.lib.door);
 
+    // Звёзды в окнах дальней стены мерцают — ночь живёт.
+    const cx = Math.floor(this.room.cols / 2);
+    const windows = [cx - 2, cx + 2];
+    if (this.room.cols >= 11) windows.push(cx - 4, cx + 4);
+    for (const wx of windows) {
+      for (let i = 0; i < 2; i++) {
+        const x = (wx + 0.33 + rng() * 0.34) * CELL;
+        const y = (0.24 + rng() * 0.36) * CELL;
+        const image = scene.add
+          .image(x, y, TEX.spark.key)
+          .setScale(art.scale * (0.45 + rng() * 0.25))
+          .setTint(hex(palette.window.star))
+          .setDepth(DEPTH.floor + 3);
+        this.objects.push(image);
+        this.twinkles.push({ image, phase: rng() * 10, rate: 0.7 + rng() * 1.2 });
+      }
+    }
+
     this.syncItems(state);
   }
 
@@ -161,10 +192,19 @@ export class WorldView {
     const leaf = this.make(TEX.doorLeaf, x, y, DEPTH.floor + 2);
     leaf.setAngle(angle);
     this.doorLeaf = leaf;
+    // Тёплый свет из-за двери ложится на пол у порога, когда дверь открыта.
+    const light = this.make(TEX.doorLight, x, y, DEPTH.floor + 1);
+    light.setAngle(angle).setAlpha(0);
+    this.doorLight = light;
   }
 
   /** Рамка миниатюры: толщина задаётся раскладкой, в клетках. */
   setFrame(thickness: number): void {
+    if (this.frameImage && Math.abs(thickness - this.frameThickness) < 1e-4) {
+      if (this.glintFilter) this.glintFilter.needsUpdate = true;
+      return;
+    }
+    this.frameThickness = thickness;
     this.frameImage?.destroy();
     const key = this.art.frame(this.room.cols, this.room.rows, thickness);
     this.frameImage = this.scene.add
@@ -172,12 +212,50 @@ export class WorldView {
       .setOrigin(0, 0)
       .setScale(this.art.scale)
       .setDepth(DEPTH.margins + 5);
+    this.setupGlint(thickness);
+  }
+
+  /**
+   * Блик золота (8.1): заранее отрисованная полоса раз в 3–5 секунд пробегает по маске
+   * золотых элементов рамки. Если фильтры недоступны — золото остаётся без блика (8.5).
+   */
+  private setupGlint(thickness: number): void {
+    this.glint?.destroy();
+    this.glintMask?.destroy();
+    this.glint = null;
+    this.glintMask = null;
+    this.glintFilter = null;
+    if (this.scene.game.renderer.type !== Phaser.WEBGL) return;
+    try {
+      const maskKey = this.art.frameMask(this.room.cols, this.room.rows, thickness);
+      const mask = new Phaser.GameObjects.Image(this.scene, -thickness * CELL, -thickness * CELL, maskKey);
+      mask.setOrigin(0, 0).setScale(this.art.scale);
+      const glint = this.scene.add
+        .image(-9999, 0, TEX.glint.key)
+        .setScale(this.art.scale * 1.4)
+        .setRotation(0.5)
+        .setDepth(DEPTH.margins + 6)
+        .setVisible(false);
+      glint.enableFilters();
+      const filter = glint.filters?.external.addMask(mask, false, this.scene.cameras.main);
+      if (filter) {
+        filter.autoUpdate = false;
+        filter.needsUpdate = true;
+        this.glintFilter = filter;
+      }
+      this.glint = glint;
+      this.glintMask = mask;
+    } catch (err) {
+      console.warn('Блик золота недоступен', err);
+      this.glint = null;
+    }
   }
 
   /** Насколько открыта дверь: 0 — закрыта, 1 — распахнута. */
   setDoorOpen(open: number): void {
     this.doorOpen = Phaser.Math.Clamp(open, 0, 1);
     if (this.doorLeaf) this.doorLeaf.scaleX = this.art.scale * (1 - this.doorOpen * 0.82);
+    this.doorLight?.setAlpha(this.doorOpen);
   }
 
   get doorOpenness(): number {
@@ -271,14 +349,14 @@ export class WorldView {
    * Стеллаж становится полупрозрачным, если за ним персонаж, предмет или подсказка (2.1.7).
    * `behind` — прямоугольники всего, что может быть скрыто.
    */
-  update(dt: number, behind: readonly WorldRect[]): void {
+  update(dt: number, behind: readonly WorldRect[], glintOn = true): void {
     this.time += dt;
     const still = this.reducedMotion();
     const rate = 1 - Math.exp(-dt / (balance.view.shelfFadeMs / 1000 / 3));
     for (const shelf of this.shelves) {
       let hidden = false;
       for (const r of behind) {
-        if (intersects(shelf.cover, r)) {
+        if (hiddenBehind(shelf.cover, r)) {
           hidden = true;
           break;
         }
@@ -295,6 +373,11 @@ export class WorldView {
       item.image.setRotation(still ? 0 : Math.sin(t) * 0.07);
       item.image.y = item.baseY + (still ? 0 : Math.sin(t * 0.7) * CELL * 0.012);
     }
+    for (const tw of this.twinkles) {
+      const a = still ? 0.8 : 0.45 + 0.55 * Math.max(0, Math.sin(this.time * tw.rate + tw.phase));
+      tw.image.setAlpha(a);
+    }
+    this.updateGlint(dt, glintOn);
     const k = this.art.scale;
     for (const flame of this.flames) {
       const t = this.time * 7 + (flame.getData('phase') as number);
@@ -305,6 +388,33 @@ export class WorldView {
         flame.setScale(k * (1 + Math.sin(t * 1.3) * 0.05), k * (1 + Math.sin(t) * 0.09 + Math.sin(t * 2.7) * 0.04));
         flame.setRotation(Math.sin(t * 0.6) * 0.07);
       }
+    }
+  }
+
+  private updateGlint(dt: number, on: boolean): void {
+    const glint = this.glint;
+    if (!glint) return;
+    if (!on) {
+      glint.setVisible(false);
+      this.glintT = -1;
+      return;
+    }
+    if (this.glintT < 0) {
+      this.glintWait -= dt;
+      if (this.glintWait > 0) return;
+      this.glintT = 0;
+      if (this.glintFilter) this.glintFilter.needsUpdate = true;
+    }
+    this.glintT += dt / 0.9;
+    const W = this.room.cols * CELL;
+    const H = this.room.rows * CELL;
+    const t = this.glintT;
+    glint.setVisible(true).setPosition(-CELL + (W + H * 0.6 + CELL * 2) * t - H * 0.3, H / 2);
+    glint.setScale(this.art.scale * 1.4, (this.art.scale * (H + CELL * 2)) / (TEX.glint.h * this.art.ppc) );
+    if (t >= 1) {
+      glint.setVisible(false);
+      this.glintT = -1;
+      this.glintWait = 3 + Math.random() * 2;
     }
   }
 
@@ -321,6 +431,12 @@ export class WorldView {
     this.flames.length = 0;
     this.frameImage?.destroy();
     this.frameImage = null;
+    this.glint?.destroy();
+    this.glintMask?.destroy();
+    this.glint = null;
+    this.glintMask = null;
     this.doorLeaf = null;
+    this.doorLight = null;
+    this.twinkles.length = 0;
   }
 }

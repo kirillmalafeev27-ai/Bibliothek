@@ -287,7 +287,8 @@ export class QuestionPanel {
 
   /** Если текст не помещается, шрифт ужимается с 24 до 16 px (11.2.2). */
   private fitText(): void {
-    const max = this.o.fontMax ?? 24;
+    const wide = this.el.clientWidth > 380 && this.el.clientHeight > 420;
+    const max = (this.o.fontMax ?? 24) + (wide ? 6 : 0);
     const min = this.o.fontMin ?? 16;
     const node = this.text;
     if (!node.isConnected) return;

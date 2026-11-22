@@ -1012,9 +1012,7 @@
 .lib-results {
   gap: 10px;
 }
-/* Узкий экран: снимок и карта рядом, итог ночи — под ними. */
-@media (max-width: 640px) {
-  .lib-results__cards {
+.lib-results__cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
@@ -1377,4 +1375,20 @@
   animation-duration: 0.001s !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001s !important;
+}
+
+/* Узкий экран: снимок и карта рядом, итог ночи — под ними. */
+@media (max-width: 640px) {
+
+/* В меню и на итогах плашка снаряжения не нужна. */
+.lib-root[data-phase='menu'] .lib-gear,
+.lib-root[data-phase='boot'] .lib-gear,
+.lib-root[data-phase='results'] .lib-gear {
+  visibility: hidden;
+}
+.lib-root[data-orient='landscape'] .lib-q-prompt {
+  flex: 0 1 auto;
+  margin: auto 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }

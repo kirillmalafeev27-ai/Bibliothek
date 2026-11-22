@@ -26,6 +26,8 @@ export interface ArtProvider {
   loudRing(ctx: CanvasRenderingContext2D, radius: number, ppc: number): void;
   /** Золотая рамка миниатюры: холст (cols + 2t) × (rows + 2t) клеток, t — толщина. */
   frame(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void;
+  /** Маска золота рамки (непрозрачно там, где сусальное золото) — для бегущего блика. */
+  frameMask(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void;
   /** Слово-звук на бандероли. Возвращает готовый холст. */
   word(text: string, ppc: number, cyrillic: boolean): HTMLCanvasElement;
 }
@@ -111,6 +113,15 @@ export class ArtFactory {
     if (this.textures.exists(key)) return key;
     const canvas = K.makeCanvas((cols + thickness * 2) * this.ppc, (rows + thickness * 2) * this.ppc);
     this.provider.frame(K.ctx2d(canvas), cols, rows, thickness, this.ppc);
+    this.add(key, canvas);
+    return key;
+  }
+
+  frameMask(cols: number, rows: number, thickness: number): string {
+    const key = `frame_mask_${cols}x${rows}_${Math.round(thickness * 1000)}`;
+    if (this.textures.exists(key)) return key;
+    const canvas = K.makeCanvas((cols + thickness * 2) * this.ppc, (rows + thickness * 2) * this.ppc);
+    this.provider.frameMask(K.ctx2d(canvas), cols, rows, thickness, this.ppc);
     this.add(key, canvas);
     return key;
   }

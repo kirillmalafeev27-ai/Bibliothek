@@ -14,7 +14,8 @@ import { approach, approachAngle, part, smooth } from './rig';
 /** Особые сцены героя. */
 export type HeroScript = 'none' | 'caught' | 'cheer' | 'sneakIn';
 
-const ARM_HUSH = 2.72;
+/** Палец у губ: рука вперёд и вверх, к лицу (герой смотрит вправо). */
+const ARM_HUSH = -2.05;
 const ARM_UP = 3.0;
 
 export class HeroView {
@@ -47,6 +48,7 @@ export class HeroView {
   private squash = 0;
   private scriptTime = 0;
   private tilt = 0;
+  private armLen = 1;
 
   constructor(
     scene: Phaser.Scene,
@@ -206,6 +208,9 @@ export class HeroView {
     }
 
     this.armRot = approachAngle(this.armRot, arm, dt, this.throwT < 1 ? 0.025 : 0.09);
+    // В жесте «тсс» рука согнута — укорачиваем её, чтобы палец пришёлся к губам.
+    const hushing = hush && this.holdT <= 0 && this.throwT >= 1 && this.script === 'none';
+    this.armLen = approach(this.armLen, hushing ? 0.64 : 1, dt, 0.08);
     this.puff = approach(this.puff, breath ? 1 : 0, dt, 0.12);
     this.tilt = approach(this.tilt, tilt, dt, 0.07);
 
@@ -231,6 +236,7 @@ export class HeroView {
     const shoulderY = -0.66 + bodyDy + sq * 0.8;
     this.arm.setPosition(shoulderX * CELL, shoulderY * CELL);
     this.arm.setRotation(this.armRot);
+    this.arm.setScale(k, k * this.armLen);
 
     this.carried.setVisible(this.holdT > 0);
     if (this.holdT > 0) {

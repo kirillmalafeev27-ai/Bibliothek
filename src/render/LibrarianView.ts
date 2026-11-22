@@ -66,9 +66,9 @@ export class LibrarianView {
     this.box = scene.add.container(0, 0);
     const p = (spec: Parameters<typeof part>[3], x: number, y: number): Phaser.GameObjects.Image =>
       part(scene, this.box, art, spec, x, y);
+    this.hem = p(TEX.libHem, 0, -0.07);
     this.slipperA = p(TEX.libSlipper, -0.13, -0.01);
     this.slipperB = p(TEX.libSlipper, 0.13, -0.01);
-    this.hem = p(TEX.libHem, 0, -0.07);
     this.robe = p(TEX.libRobe, 0, 0);
     this.keys = p(TEX.libKeys, 0.15, -0.5);
     this.earFar = p(TEX.libEar, 0.0, -1.3);

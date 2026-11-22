@@ -743,7 +743,7 @@ export class GameScene extends Phaser.Scene {
     if (tl.t >= tl.dur) this.finishOutro();
   }
 
-  /** Снимок кадра для карточки итогов (11.5.5). */
+  /** Снимок кадра для карточки итогов (11.5.5): весь кадр, затем вырезаем миниатюру. */
   private takeSnapshot(delaySec: number): void {
     this.time.delayedCall(delaySec * 1000, () => {
       const layout = this.layout;
@@ -751,15 +751,26 @@ export class GameScene extends Phaser.Scene {
       if (!layout || !renderer) return;
       const d = this.dprNow;
       const f = layout.field;
-      renderer.snapshotArea(
-        Math.max(0, Math.round(f.x * d)),
-        Math.max(0, Math.round(f.y * d)),
-        Math.round(f.w * d),
-        Math.round(f.h * d),
-        (img) => {
-          if (img instanceof HTMLImageElement) this.snapshot = img.src;
-        },
-      );
+      renderer.snapshot((img) => {
+        if (!(img instanceof HTMLImageElement)) return;
+        const crop = (): void => {
+          const w = Math.round(f.w * d);
+          const h = Math.round(f.h * d);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.min(w, 640);
+          canvas.height = Math.round((canvas.width / w) * h);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.drawImage(img, Math.round(f.x * d), Math.round(f.y * d), w, h, 0, 0, canvas.width, canvas.height);
+          try {
+            this.snapshot = canvas.toDataURL('image/jpeg', 0.86);
+          } catch {
+            this.snapshot = img.src;
+          }
+        };
+        if (img.complete) crop();
+        else img.onload = crop;
+      });
     });
   }
 
@@ -799,7 +810,7 @@ export class GameScene extends Phaser.Scene {
       this.hero.footRect(),
       ...this.libs.map((l) => l.footRect()),
     ];
-    this.world.update(dt, behind);
+    this.world.update(dt, behind, this.host.quality.goldGlint);
     this.scrollCamera();
   }
 

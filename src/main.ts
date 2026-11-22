@@ -21,6 +21,11 @@ async function start(container: HTMLElement): Promise<void> {
     await m.showKitSheet(container);
     return;
   }
+  if (import.meta.env.DEV && scene === 'sprites') {
+    const m = await import('./dev/spriteSheet');
+    await m.showSpriteSheet(container);
+    return;
+  }
   let art: ArtProvider | undefined;
   if (params.get('art') === 'gray') {
     art = (await import('./art/recipes/gray')).grayProvider;

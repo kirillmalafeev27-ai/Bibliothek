@@ -123,7 +123,16 @@ export class GameApp {
   private resizeObserver: ResizeObserver | null = null;
   private readonly cleanups: (() => void)[] = [];
 
-  private phase: Phase = 'boot';
+  private _phase: Phase = 'boot';
+
+  private get phase(): Phase {
+    return this._phase;
+  }
+
+  private set phase(p: Phase) {
+    this._phase = p;
+    this.root.dataset.phase = p;
+  }
   private round: Round | null = null;
   private roundUnsub: (() => void) | null = null;
   private attract: Round | null = null;
@@ -151,6 +160,7 @@ export class GameApp {
     this.provider = options.art ?? grayProvider;
 
     this.root = el('div', 'lib-root');
+    this.root.dataset.phase = 'boot';
     this.root.dataset.pointer = matchMedia('(pointer: fine)').matches ? 'fine' : 'coarse';
     applyParchmentVars(this.root, THEME);
     for (const side of ['top', 'bottom', 'left', 'right']) {
@@ -314,8 +324,9 @@ export class GameApp {
   private showMenu(): void {
     this.endRound();
     this.phase = 'menu';
-    this.panel.showNote(ru.menuLead);
-    this.panel.setHeader(ru.title, null);
+    // В панели вопроса — факт о немецком, как на экране загрузки.
+    this.panel.showNote(tipsRu[Math.floor(Math.random() * tipsRu.length)] ?? ru.menuLead);
+    this.panel.setHeader(ru.subtitle, null);
     this.startAttract();
     this.screens.menu(
       {

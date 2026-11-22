@@ -218,6 +218,13 @@ export const grayProvider: ArtProvider = {
     ctx.strokeRect(t / 2, t / 2, cols * ppc + t, rows * ppc + t);
   },
 
+  frameMask(ctx: CanvasRenderingContext2D, cols: number, rows: number, thickness: number, ppc: number): void {
+    const t = thickness * ppc;
+    ctx.strokeStyle = G.item;
+    ctx.lineWidth = t;
+    ctx.strokeRect(t / 2, t / 2, cols * ppc + t, rows * ppc + t);
+  },
+
   word(text: string, ppc: number): HTMLCanvasElement {
     const px = ppc * 0.3;
     const probe = K.ctx2d(K.makeCanvas(4, 4));
