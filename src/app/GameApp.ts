@@ -9,7 +9,7 @@ import { applyIcons, buildIcons } from '../art/icons';
 import { setupKit } from '../art/kit';
 import { levelMiniature } from '../art/miniature';
 import type { ArtProvider } from '../art/ArtFactory';
-import { grayProvider } from '../art/recipes/gray';
+import { manuscriptProvider } from '../art/recipes/manuscript';
 import type { GameAudio } from '../audio/types';
 import { GameAudioEngine } from '../audio/GameAudioEngine';
 import { balance } from '../config/balance';
@@ -159,7 +159,7 @@ export class GameApp {
     this.pace = new Pace(storage, balance.pace);
     this.quality = new Quality(balance.perf, this.settings.data.quality, this.settings.data.motion);
     this.audio = options.audio ?? new GameAudioEngine();
-    this.provider = options.art ?? grayProvider;
+    this.provider = options.art ?? manuscriptProvider;
 
     this.root = el('div', 'lib-root');
     this.root.dataset.phase = 'boot';

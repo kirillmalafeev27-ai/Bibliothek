@@ -27,16 +27,9 @@ async function start(container: HTMLElement): Promise<void> {
     await m.showSpriteSheet(container);
     return;
   }
+  // Серый прототип — только по ?art=gray; по умолчанию рукописный арт.
   let art: ArtProvider | undefined;
-  if (params.get('art') === 'gray') {
-    art = (await import('./art/recipes/gray')).grayProvider;
-  } else {
-    try {
-      art = (await import('./art/recipes/manuscript')).manuscriptProvider;
-    } catch {
-      art = undefined;
-    }
-  }
+  if (params.get('art') === 'gray') art = (await import('./art/recipes/gray')).grayProvider;
   const levelParam = params.get('level');
   // Dev: ?q=edge — вопросы с длинными составными словами и с 2, 3 и 4 вариантами.
   const edge: Question[] = [
@@ -74,7 +67,7 @@ async function start(container: HTMLElement): Promise<void> {
     art,
     level: levelParam ? Number(levelParam) : undefined,
     dev: import.meta.env.DEV,
-    hearingTest: scene === 'hearing',
+    hearingTest: import.meta.env.DEV && scene === 'hearing',
   });
   (window as unknown as { __lib?: GameApp }).__lib = app;
 }
