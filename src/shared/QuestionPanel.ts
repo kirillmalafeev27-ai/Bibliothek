@@ -39,6 +39,8 @@ export interface QuestionPanelOptions {
   /** Вызывается в момент клика: моментом действия считается сам клик (2.2.6). */
   onAnswer: (info: AnswerInfo) => void;
   random?: () => number;
+  /** Dev-сборка: верный вариант помечается атрибутом data-correct (для сквозного теста). */
+  exposeAnswer?: boolean;
   /** Пределы размера шрифта задания, px (11.2.2). */
   fontMax?: number;
   fontMin?: number;
@@ -263,6 +265,7 @@ export class QuestionPanel {
       const button = el('button', 'lib-opt');
       button.type = 'button';
       button.dataset.index = String(i);
+      if (this.o.exposeAnswer && i === q.correctIndex) button.dataset.correct = '1';
       button.setAttribute('lang', q.optionsLang);
       button.setAttribute('aria-label', this.o.strings.optionLabel(i + 1, option));
       const key = el('span', 'lib-opt__key');

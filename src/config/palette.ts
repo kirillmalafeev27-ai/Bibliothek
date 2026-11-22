@@ -80,6 +80,24 @@ export const palette = {
     monkey: '#a88a62',
     veil: 'rgba(42, 29, 20, 0.55)',
   },
+
+  /** Серый прототип (этап 2): геймплей сначала проверяется на серых фигурах. */
+  proto: {
+    paper: '#e9e9e6',
+    floorA: '#cfcfcb',
+    floorB: '#c2c2be',
+    squeak: '#a9a9a4',
+    wall: '#5a5a58',
+    shelf: '#6e6e6b',
+    shelfTop: '#8a8a86',
+    door: '#f4f4f0',
+    line: '#2b2b2a',
+    librarian: '#3c3c3b',
+    hero: '#fafaf7',
+    item: '#ffffff',
+    ring: '#1f1f1e',
+    alarm: '#111110',
+  },
 } as const;
 
 export type Palette = typeof palette;
