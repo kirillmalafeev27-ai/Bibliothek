@@ -88,11 +88,11 @@ const TIERS: readonly TierMetrics[] = [
   },
   {
     tier: 'ultra',
-    gap: 6,
-    gearH: 34,
-    gearW: 46,
+    gap: 5,
+    gearH: 30,
+    gearW: 44,
     frame: 3,
-    questionMinPortrait: 186,
+    questionMinPortrait: 190,
     questionMinLandscape: 250,
   },
 ];

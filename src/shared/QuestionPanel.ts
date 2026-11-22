@@ -264,6 +264,10 @@ export class QuestionPanel {
     this.text.textContent = q.prompt;
     this.text.setAttribute('lang', q.promptLang);
     this.options.setAttribute('data-count', String(q.options.length));
+    // Три коротких варианта (der, die, das) — в один ряд.
+    this.options.dataset.compact = String(
+      q.options.length === 3 && q.options.every((o) => o.length <= 12),
+    );
     this.buttons = q.options.map((option, i) => {
       const button = el('button', 'lib-opt');
       button.type = 'button';
@@ -288,20 +292,47 @@ export class QuestionPanel {
     this.fitText();
   }
 
-  /** Если текст не помещается, шрифт ужимается с 24 до 16 px (11.2.2). */
+  /**
+   * Если текст не помещается, шрифт ужимается с 24 до 16 px (11.2.2). Если и тогда
+   * не помещаются таблички с длинными составными словами — ужимаются и они.
+   */
   private fitText(): void {
-    const wide = this.el.clientWidth > 380 && this.el.clientHeight > 420;
-    const max = (this.o.fontMax ?? 24) + (wide ? 6 : 0);
+    // На просторной панели (планшет, ландшафт) задание крупнее.
+    const wide = this.el.clientWidth > 380 && this.el.clientHeight >= 380;
+    const max = (this.o.fontMax ?? 24) + (wide ? 8 : 0);
     const min = this.o.fontMin ?? 16;
     const node = this.text;
     if (!node.isConnected) return;
-    let size = max;
-    node.style.setProperty('--q-font', `${size}px`);
     const box = node.parentElement;
     if (!box) return;
-    const overflows = (): boolean =>
+    let size = max;
+    node.style.setProperty('--q-font', `${size}px`);
+    this.options.style.removeProperty('--q-opt-font');
+    const promptOverflows = (): boolean =>
       node.scrollWidth > node.clientWidth + 1 || box.scrollHeight > box.clientHeight + 1;
-    while (size > min && overflows()) {
+    while (size > min && promptOverflows()) {
+      size -= 1;
+      node.style.setProperty('--q-font', `${size}px`);
+    }
+    // Таблички: помещаются ли все в панель.
+    const panelOverflows = (): boolean => {
+      const panel = this.el.getBoundingClientRect();
+      for (const b of this.buttons) {
+        const r = b.getBoundingClientRect();
+        if (r.bottom > panel.bottom - 2 || b.scrollWidth > b.clientWidth + 1) return true;
+      }
+      return this.body.scrollHeight > this.body.clientHeight + 1;
+    };
+    const base =
+      parseFloat(
+        getComputedStyle(this.options.querySelector('.lib-opt') ?? this.options).fontSize,
+      ) || 19;
+    let opt = base;
+    while (opt > 12 && panelOverflows()) {
+      opt -= 1;
+      this.options.style.setProperty('--q-opt-font', `${opt}px`);
+    }
+    while (size > 13 && panelOverflows()) {
       size -= 1;
       node.style.setProperty('--q-font', `${size}px`);
     }

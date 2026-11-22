@@ -252,7 +252,11 @@
 }
 
 .lib-q-options {
-  flex: none;
+  flex: 0 1 auto;
+  min-height: 0;
+  /* Последняя страховка для очень длинных вариантов на крошечном экране. */
+  overflow-y: auto;
+  padding-bottom: 3px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--q-opt-gap, 8px);
@@ -262,6 +266,12 @@
 }
 .lib-q-options[data-count='3'] .lib-opt:last-child {
   grid-column: 1 / -1;
+}
+.lib-root[data-orient='portrait'] .lib-q-options[data-count='3'][data-compact='true'] {
+  grid-template-columns: repeat(3, 1fr);
+}
+.lib-root[data-orient='portrait'] .lib-q-options[data-count='3'][data-compact='true'] .lib-opt:last-child {
+  grid-column: auto;
 }
 .lib-root[data-orient='landscape'] .lib-q-options[data-count='3'] .lib-opt:last-child {
   grid-column: auto;
@@ -1350,13 +1360,17 @@
   --q-prompt-min: 40px;
 }
 .lib-root[data-tier='ultra'] {
-  --q-pad: 6px;
-  --q-gap: 4px;
-  --q-head: 14px;
-  --q-initial: 30px;
-  --q-prompt-min: 32px;
-  --q-opt-gap: 5px;
+  --q-pad: 5px;
+  --q-gap: 3px;
+  --q-head: 13px;
+  --q-initial: 28px;
+  --q-prompt-min: 30px;
+  --q-opt-gap: 4px;
   --q-opt-font: 17px;
+}
+.lib-root[data-tier='ultra'] .lib-q-head {
+  line-height: 1.15;
+  min-height: 0;
 }
 .lib-root[data-tier='ultra'] .lib-q-prompt {
   padding: 1px 6px 1px 2px;

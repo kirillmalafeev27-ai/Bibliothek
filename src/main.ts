@@ -8,6 +8,7 @@
 import { GameApp } from './app/GameApp';
 import type { ArtProvider } from './art/ArtFactory';
 import { LocalBankProvider } from './shared/questions/LocalBankProvider';
+import type { Question } from './shared/questions/types';
 
 const root = document.getElementById('app');
 if (!root) throw new Error('main: нет элемента #app');
@@ -37,8 +38,39 @@ async function start(container: HTMLElement): Promise<void> {
     }
   }
   const levelParam = params.get('level');
+  // Dev: ?q=edge — вопросы с длинными составными словами и с 2, 3 и 4 вариантами.
+  const edge: Question[] = [
+    {
+      id: 'edge-1',
+      prompt: 'die Donaudampfschifffahrtsgesellschaftskapitänsmütze',
+      promptLang: 'de',
+      options: ['richtig', 'falsch'],
+      optionsLang: 'de',
+      correctIndex: 0,
+    },
+    {
+      id: 'edge-2',
+      prompt: 'Rechtsschutzversicherungsgesellschaften',
+      promptLang: 'de',
+      options: ['die', 'der', 'das'],
+      optionsLang: 'de',
+      correctIndex: 0,
+    },
+    {
+      id: 'edge-3',
+      prompt: 'страховая компания',
+      promptLang: 'ru',
+      options: ['die Rechtsschutzversicherungsgesellschaft', 'das Auto', 'der Hund', 'die Katze'],
+      optionsLang: 'de',
+      correctIndex: 0,
+    },
+  ];
+  const questions =
+    import.meta.env.DEV && params.get('q') === 'edge'
+      ? new LocalBankProvider(edge)
+      : new LocalBankProvider();
   const app = new GameApp(container, {
-    questions: new LocalBankProvider(),
+    questions,
     art,
     level: levelParam ? Number(levelParam) : undefined,
     dev: import.meta.env.DEV,
