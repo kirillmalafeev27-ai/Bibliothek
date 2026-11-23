@@ -5,17 +5,26 @@
  *   npm run sim -- --all --runs 1000            все уровни, все боты, сверка с целями
  *   npm run sim -- --level 3 --bot cautious --p 0.65 --tmed 8
  *   npm run sim -- --escalation --runs 3000     проверка эскалации (14.5)
+ *   npm run sim -- --level 3 --gen --tmed 12    раунд с заданиями ИИ-генератора
+ *   npm run sim -- --compare-gen --runs 1000    банк против генератора на всех уровнях
  */
 import { balance } from '../src/config/balance';
 import type { LevelConfig } from '../src/config/levels';
 import { levelById, levels } from '../src/config/levels';
 import type { Action, GameEvent, GameState } from '../src/core';
 import { Rng, createState, inEarshot, mixSeed, reduce, starsOf } from '../src/core';
+import { roundTmed, tMedRangeFor } from '../src/app/pacing';
 import type { BotKind } from './bots';
 import { BOT_NAMES, TRAITS, planFor } from './bots';
 
 /** Модель ответа (14.2). */
 const ANSWER_SIGMA = 0.5;
+/**
+ * Задания генератора: форматы разной длины, поэтому время ответа разбросано сильнее (оценка
+ * «Костров до рассвета» по ответам учеников), а показ ошибки дольше.
+ */
+const GEN_SIGMA = 0.65;
+const GEN_WRONG_SEC = balance.wrongFeedbackGeneratedMs / 1000;
 const SWAP_SEC = 0.3;
 const WRONG_SEC = balance.wrongFeedbackMs / 1000;
 const DT = balance.maxFrameDtSec;
@@ -50,15 +59,30 @@ export interface SimOptions {
   infiniteCards?: boolean;
   /** Переопределить выдержку бота, в единицах A. */
   patienceA?: number;
+  /** Задания ИИ-генератора: шире пределы T_med, больше разброс, дольше показ ошибки. */
+  gen?: boolean;
+  /** Запас к T_med для единицы A у заданий генератора (по умолчанию — как в игре). */
+  allowance?: number;
 }
 
 export function simulateRound(o: SimOptions): RoundResult {
-  let s = createState(o.level, o.seed, { tMedSec: o.tMed });
+  // Игра берёт для единицы A медиану с запасом (src/app/pacing.ts), а ученик отвечает с
+  // медианой o.tMed — как в GameApp.startLevel.
+  let s = createState(o.level, o.seed, {
+    tMedSec: o.gen
+      ? o.allowance !== undefined
+        ? o.allowance * o.tMed
+        : roundTmed('generated', o.tMed)
+      : o.tMed,
+    tMedRange: o.gen ? tMedRangeFor('generated') : undefined,
+  });
+  const sigma = o.gen ? GEN_SIGMA : ANSWER_SIGMA;
+  const wrongSec = o.gen ? GEN_WRONG_SEC : WRONG_SEC;
   if (o.infiniteCards) s = { ...s, debug: { ...s.debug, infiniteCards: true } };
   const rng = new Rng(mixSeed(o.seed, 0xb07));
   const traits = TRAITS[o.bot];
   const patienceSec = (o.patienceA ?? traits.patienceA) * s.unitA;
-  const answerTime = (): number => o.tMed * Math.exp(ANSWER_SIGMA * rng.gauss());
+  const answerTime = (): number => o.tMed * Math.exp(sigma * rng.gauss());
 
   let now = 0;
   let answerAt = answerTime();
@@ -114,7 +138,7 @@ export function simulateRound(o: SimOptions): RoundResult {
           const correct = rng.chance(o.p);
           dispatch({ type: 'ANSWER', correct, timeMs: 0 });
           answers++;
-          answerAt = now + (correct ? SWAP_SEC : WRONG_SEC) + answerTime();
+          answerAt = now + (correct ? SWAP_SEC : wrongSec) + answerTime();
         } else {
           rethinkAt = now + RETHINK_SEC;
         }
@@ -166,6 +190,7 @@ export function simulate(
   seed0 = 1,
   infiniteCards = false,
   patienceA?: number,
+  gen: boolean | { allowance: number } = false,
 ): Summary {
   let win = 0;
   let star2 = 0;
@@ -178,7 +203,17 @@ export function simulate(
   const caughtBy: Record<string, number> = { error: 0, squeak: 0, step: 0, sniff: 0, other: 0 };
   const esc = { f: 0, fc: 0, s: 0, sc: 0 };
   for (let i = 0; i < runs; i++) {
-    const r = simulateRound({ level, bot, p, tMed, seed: seed0 + i, infiniteCards, patienceA });
+    const r = simulateRound({
+      level,
+      bot,
+      p,
+      tMed,
+      seed: seed0 + i,
+      infiniteCards,
+      patienceA,
+      gen: gen !== false,
+      allowance: typeof gen === 'object' ? gen.allowance : undefined,
+    });
     if (r.won) win++;
     if (r.stars >= 2) star2++;
     if (r.stars >= 3) star3++;
@@ -252,6 +287,10 @@ interface Args {
   table: boolean;
   levels?: number[];
   patience?: number;
+  gen: boolean;
+  compareGen: boolean;
+  /** Запас к T_med генератора вместо balance.paceGenerated.allowance (подбор). */
+  allowance?: number;
 }
 
 function parseArgs(argv: string[]): Args {
@@ -263,6 +302,8 @@ function parseArgs(argv: string[]): Args {
     all: false,
     escalation: false,
     table: false,
+    gen: false,
+    compareGen: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
@@ -279,8 +320,52 @@ function parseArgs(argv: string[]): Args {
     else if (k === '--levels' && v)
       a.levels = v.split(',').map((x) => (x === '∞' || x === 'inf' ? 7 : Number(x)));
     else if (k === '--patience' && v) a.patience = Number(v);
+    else if (k === '--gen') a.gen = true;
+    else if (k === '--compare-gen') a.compareGen = true;
+    else if (k === '--allowance' && v) a.allowance = Number(v);
   }
   return a;
+}
+
+/**
+ * Банк против заданий ИИ-генератора: тот же ученик (та же доля верных) с темпом банка 5 с и
+ * темпом генератора 12 с, разбросом 0.65 и показом ошибки 1.8 с. Единица A растягивается вместе
+ * с T_med, поэтому раунд должен остаться тем же по трудности (docs/GENERATION.md, «Темп»).
+ */
+function compareGen(a: Args): void {
+  const ids = a.level ? [a.level] : levels.map((l) => l.id);
+  const genTmed = balance.paceGenerated.defaultTmedSec;
+  const allowance = a.allowance ?? balance.paceGenerated.allowance;
+  console.log(
+    `Банк (T=${a.tmed} с, σ=${ANSWER_SIGMA}) против генератора (T=${genTmed} с, σ=${GEN_SIGMA}, ` +
+      `ошибка ${GEN_WRONG_SEC} с, запас ×${allowance}); p=${a.p}, ${a.runs} раундов; ` +
+      `победа / ★★ / ★★★, %`,
+  );
+  let sum = 0;
+  let count = 0;
+  for (const id of ids) {
+    for (const bot of a.bot ? [a.bot] : BOTS) {
+      const bank = simulate(levelById(id), bot, a.runs, a.p, a.tmed, a.seed);
+      const gen = simulate(
+        levelById(id),
+        bot,
+        a.runs,
+        a.p,
+        genTmed,
+        a.seed,
+        false,
+        a.patience,
+        a.allowance !== undefined ? { allowance: a.allowance } : true,
+      );
+      console.log(
+        `  ур. ${levelName(id)} ${BOT_NAMES[bot].padEnd(13)} банк ${triple(bank).padEnd(14)} ` +
+          `генератор ${triple(gen).padEnd(14)} Δпобед ${fmt(gen.win - bank.win, 1)}`,
+      );
+      sum += gen.win - bank.win;
+      count++;
+    }
+  }
+  console.log(`Средняя разница побед: ${fmt(sum / Math.max(1, count), 1)} п.п.`);
 }
 
 const BOTS: BotKind[] = ['cautious', 'impatient', 'nobooks', 'rusher'];
@@ -428,6 +513,10 @@ function runAll(a: Args): void {
 
 function main(): void {
   const a = parseArgs(process.argv.slice(2));
+  if (a.compareGen) {
+    compareGen(a);
+    return;
+  }
   if (a.all) {
     runAll(a);
     return;
@@ -447,7 +536,9 @@ function main(): void {
   for (const id of ids) {
     console.log(`\nУровень ${levelName(id)} — ${a.runs} раундов`);
     for (const bot of a.bot ? [a.bot] : BOTS)
-      printSummary(simulate(levelById(id), bot, a.runs, a.p, a.tmed, a.seed));
+      printSummary(
+        simulate(levelById(id), bot, a.runs, a.p, a.tmed, a.seed, false, a.patience, a.gen),
+      );
   }
   console.log(`\n${((Date.now() - t0) / 1000).toFixed(1)} с`);
 }

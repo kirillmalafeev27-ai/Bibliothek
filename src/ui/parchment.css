@@ -1425,3 +1425,337 @@
   padding-top: 12px;
   padding-bottom: 12px;
 }
+
+/* ───────────── Задания ИИ-генератора (формат Morskoy, docs/GENERATION.md) ─────────────
+   Инструкция по-русски — как глосса писца, немецкий материал — основным письмом, варианты-
+   предложения — столбиком во всю ширину. Размер шрифта подбирает QuestionPanel.fitSheet. */
+
+.lib-q-text [hidden] {
+  display: none !important;
+}
+.lib-q-line {
+  display: block;
+}
+.lib-q-instruction {
+  font-size: 14px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.25;
+  color: var(--ink-faded);
+  /* Русскую инструкцию не переносим по слогам: она короткая и читается одним взглядом. */
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
+/* Подпись, пока генерация готовит задание: перо ещё пишет. */
+.lib-q-text.is-waiting {
+  animation: lib-breathe 1.3s ease-in-out infinite;
+}
+@keyframes lib-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.lib-question.is-task .lib-q-body {
+  overflow: hidden;
+}
+/* Задание и варианты — одной группой по центру листа: глаз идёт от материала прямо к вариантам.
+   Авто-поля, а не justify-content: при прокрутке они схлопываются, и верх не обрезается. */
+.lib-root .lib-question.is-task .lib-q-prompt {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin: auto 0 0;
+  padding: 6px 8px 7px;
+}
+.lib-question.is-task .lib-q-initial {
+  display: none;
+}
+.lib-question.is-task .lib-q-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.22;
+}
+/* Реплики диалога — каждая с новой строки, тире висит слева, как в учебнике. */
+.lib-q-material.is-dialog .lib-q-line {
+  padding-left: 0.85em;
+  text-indent: -0.85em;
+}
+
+.lib-q-listen {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 18px 6px 14px;
+  font: inherit;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+  background-color: var(--tablet);
+  background-image: linear-gradient(180deg, var(--tablet-hi), var(--tablet) 55%, var(--tablet-lo));
+  border: 1.5px solid var(--ink);
+  border-radius: 23px;
+  box-shadow:
+    inset 0 0 0 2px var(--tablet-hi),
+    inset 0 0 0 3px var(--gold),
+    0 2px 0 var(--ink);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.lib-q-listen__icon {
+  width: 0;
+  height: 0;
+  border-left: 13px solid var(--rubric);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+.lib-q-listen:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 0 0 2px var(--tablet-hi),
+    inset 0 0 0 3px var(--gold);
+}
+.lib-q-listen:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.lib-q-listen:focus-visible {
+  outline: 3px solid var(--robe);
+  outline-offset: 2px;
+}
+
+.lib-question.is-task .lib-q-options {
+  flex: 0 0 auto;
+  margin-bottom: auto;
+  overflow: visible;
+  gap: 7px;
+}
+/* Короткие варианты задания (одно слово, «ist – gefahren») — ниже 56 px из 11.2.4, чтобы рядом
+   с инструкцией и материалом встал весь вопрос; палец всё равно попадает (≥ 44 px). */
+.lib-question.is-task .lib-opt {
+  min-height: 48px;
+  padding: 5px 10px 5px 12px;
+  line-height: 1.2;
+}
+/* В ландшафте варианты банка стоят столбиком (11.2.4), а короткие варианты задания — сеткой
+   2 × 2: рядом с инструкцией и диалогом столбик из четырёх не помещается. */
+.lib-root .lib-question.is-task .lib-q-options.is-grid {
+  grid-template-columns: 1fr 1fr;
+}
+/* Варианты-предложения: столбиком во всю ширину, текст по левому краю — так их легко сравнить. */
+.lib-question.is-task .lib-q-options.is-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lib-question.is-task .lib-q-options.is-column .lib-opt {
+  min-height: 46px;
+}
+
+/* Плотная раскладка: длинное задание на телефоне — меньше полей, прежде чем мельчить шрифт. */
+.lib-q-body.is-dense {
+  gap: 5px;
+}
+.lib-root .lib-question.is-task .lib-q-body.is-dense .lib-q-prompt {
+  padding: 3px 6px 4px;
+}
+.lib-q-body.is-dense .lib-q-text {
+  gap: 2px;
+  line-height: 1.15;
+}
+.lib-question.is-task .lib-q-body.is-dense .lib-q-options {
+  gap: 4px;
+}
+.lib-question.is-task .lib-q-body.is-dense .lib-opt {
+  min-height: 44px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  line-height: 1.12;
+}
+.lib-q-body.is-dense .lib-q-listen {
+  min-height: 38px;
+  padding: 3px 14px 3px 10px;
+  font-size: 15px;
+}
+
+/* Крайний случай (очень длинное задание на крошечном экране): лист прокручивается, а нижний
+   край тает — видно, что ниже есть ещё варианты. */
+.lib-q-body.is-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent);
+  mask-image: linear-gradient(to bottom, #000 82%, transparent);
+}
+.lib-q-body.is-scroll.is-scroll-end {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* Подпись интро, пока генерация готовит первое задание раунда. */
+.lib-intro__wait {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--ink-faded);
+  animation: lib-breathe 1.3s ease-in-out infinite;
+}
+
+/* ───────────── Выбор тем вопросов (движок Morskoy) ───────────── */
+
+.lib-quiz-summary {
+  margin: -2px 0 0;
+  max-width: 380px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--ink-faded);
+}
+.lib-quiz-summary[lang] {
+  font-style: normal;
+}
+.lib-quiz {
+  align-items: stretch;
+  text-align: left;
+  gap: 10px;
+}
+.lib-quiz .lib-heading,
+.lib-quiz .lib-rule {
+  align-self: center;
+}
+.lib-quiz-intro {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.4;
+  text-align: center;
+  text-wrap: pretty;
+}
+.lib-quiz-status {
+  margin: 0;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--alarm-dark);
+  border: 1px dashed var(--rubric);
+  border-radius: 5px;
+}
+.lib-quiz-status:empty {
+  display: none;
+}
+.lib-quiz-section {
+  margin: 0;
+  padding: 8px 10px 10px;
+  border: 1px solid var(--ink-hair);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lib-quiz-title {
+  margin: 0;
+  color: var(--rubric);
+  font-weight: 600;
+  font-size: 15px;
+}
+.lib-quiz-title::first-letter {
+  font-size: 1.2em;
+}
+.lib-quiz-group-title {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-faded);
+}
+.lib-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lib-tag {
+  min-height: 38px;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--ink);
+  text-align: left;
+  text-transform: none;
+  background-color: var(--tablet);
+  border: 1.5px solid var(--ink-hair);
+  border-radius: 7px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    transform 0.06s ease,
+    background-color 0.15s ease;
+}
+.lib-tag:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.lib-tag.is-on {
+  font-weight: 600;
+  background-color: var(--gold);
+  background-image: var(
+    --tex-gold,
+    linear-gradient(135deg, var(--gold-light), var(--gold) 50%, var(--gold-dark))
+  );
+  background-size: 180px 180px;
+  border-color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+.lib-tag:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+.lib-tag:focus-visible {
+  outline: 3px solid var(--robe);
+  outline-offset: 2px;
+}
+.lib-quiz-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 2px 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.lib-quiz-check input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--rubric);
+}
+.lib-quiz-check .lib-field__note {
+  grid-column: 2;
+}
+.lib-quiz-check.is-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+.lib-quiz-need {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--rubric);
+  text-align: center;
+}
+.lib-quiz-need:empty {
+  display: none;
+}
+/* Кнопки — внизу карточки и всегда под рукой: список тем длинный. */
+.lib-quiz-actions {
+  position: sticky;
+  bottom: -20px;
+  z-index: 1;
+  margin: 0 -22px -20px;
+  padding: 10px 16px 14px;
+  background-color: var(--panel-solid);
+  border-top: 1px solid var(--ink-hair);
+  border-radius: 0 0 6px 6px;
+}

@@ -53,6 +53,20 @@ export const defaultLayoutSpec: LayoutSpec = {
   landscapeMax: 480,
 };
 
+/**
+ * Раскладка раунда с заданиями ИИ-генератора: инструкции, диалогу и четырём предложениям нужнее
+ * место, чем миниатюре. Панель вопроса больше, а клетка уступает до минимальных 36 px вместо
+ * желаемых 40 — где места хватает и так, раскладка та же.
+ */
+export const genLayoutSpec: LayoutSpec = {
+  ...defaultLayoutSpec,
+  cellWant: 36,
+  portraitShare: 0.5,
+  portraitMax: 520,
+  landscapeShare: 0.42,
+  landscapeMax: 600,
+};
+
 interface TierMetrics {
   tier: LayoutTier;
   /** Просвет между панелями и до края экрана. */

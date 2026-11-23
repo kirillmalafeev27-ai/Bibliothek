@@ -6,6 +6,17 @@ import type { HintSet, LevelConfig } from '../../config/levels';
 import { hintPresets, levels } from '../../config/levels';
 import { ru } from '../../i18n/ru';
 import type { SettingsData } from '../../app/stores';
+import type { AiStatus } from '../../shared/questions/AiQuestionProvider';
+import type { CefrLevel, QuizConfig } from '../../shared/questions/topics';
+import {
+  BASE_LEXICAL_TOPICS,
+  CEFR_LEVELS,
+  EXTRA_LEXICAL_TOPICS,
+  GRAMMAR_GROUPS,
+  MAX_GRAMMAR_TOPICS,
+  VOCAB_TOPICS,
+  isVocabTopic,
+} from '../../shared/questions/topics';
 
 export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -49,6 +60,17 @@ export interface MenuHandlers {
   onPlay: () => void;
   onLevels: () => void;
   onSettings: () => void;
+  /**
+   * Источник вопросов умеет выбирать темы (ИИ-генерация): под «Играть» — кнопка «Вопросы» и
+   * строка с выбранными темами.
+   */
+  quiz?: { summary: string; onOpen: () => void };
+}
+
+export interface QuizHandlers {
+  onDone: (config: QuizConfig) => void;
+  onBank: () => void;
+  onCancel: () => void;
 }
 
 export interface LevelEntry {
@@ -135,11 +157,13 @@ export class Screens {
     node.dataset.kind = kind;
     this.current = node;
     this.el.append(node);
-    // Фокус — на первую кнопку: всем можно управлять с клавиатуры (11.6.3).
+    // Фокус — на отмеченный элемент или первую кнопку: всем можно управлять с клавиатуры
+    // (11.6.3). Отметка главнее порядка в документе.
     queueMicrotask(() =>
-      node
-        .querySelector<HTMLElement>('[data-autofocus], button:not(:disabled)')
-        ?.focus({ preventScroll: true }),
+      (
+        node.querySelector<HTMLElement>('[data-autofocus]') ??
+        node.querySelector<HTMLElement>('button:not(:disabled)')
+      )?.focus({ preventScroll: true }),
     );
     return node;
   }
@@ -211,6 +235,7 @@ export class Screens {
     play.dataset.autofocus = '';
     const row = el('div', 'lib-row');
     if (canChooseLevel) row.append(button(ru.levels, 'lib-btn--small', h.onLevels));
+    if (h.quiz) row.append(button(ru.menuQuiz, 'lib-btn--small', h.quiz.onOpen));
     row.append(button(ru.settings, 'lib-btn--small', h.onSettings));
     plate.append(
       title,
@@ -221,6 +246,7 @@ export class Screens {
       play,
       row,
     );
+    if (h.quiz) plate.append(el('p', 'lib-quiz-summary', h.quiz.summary));
     screen.append(plate);
     this.show(screen, 'menu');
   }
@@ -265,13 +291,19 @@ export class Screens {
 
   // ─────────────── интро ───────────────
 
-  intro(text: string, onSkip: () => void): void {
+  /** wait — подпись под заголовком, пока генерация готовит первое задание раунда. */
+  intro(text: string, onSkip: () => void, wait?: string): void {
     const screen = el('div', 'lib-screen lib-intro');
     screen.setAttribute('role', 'button');
     screen.setAttribute('aria-label', ru.introSkip);
     screen.tabIndex = 0;
     const card = el('div', 'lib-intro__card');
     card.append(el('p', 'lib-rubric', text));
+    if (wait) {
+      const w = el('p', 'lib-intro__wait', wait);
+      w.setAttribute('role', 'status');
+      card.append(w);
+    }
     screen.append(card);
     screen.addEventListener('pointerdown', onSkip, { once: true });
     screen.addEventListener('keydown', (e) => {
@@ -407,6 +439,214 @@ export class Screens {
       if (reduced) c.classList.add('is-in');
       else this.timers.push(window.setTimeout(() => c.classList.add('is-in'), 80 + i * 260));
     });
+  }
+
+  // ─────────────── выбор тем вопросов (движок Morskoy) ───────────────
+
+  /**
+   * Уровень, лексическая тема, до пяти тем (свои наборы слов и грамматика), порядок слов и
+   * аудирование — шаги меню Morskoy на одной карточке. Открывается поверх меню.
+   */
+  quiz(initial: QuizConfig | null, status: Promise<AiStatus>, h: QuizHandlers): void {
+    const t = ru.quiz;
+    const cur: QuizConfig = initial
+      ? { ...initial, grammarTopics: [...initial.grammarTopics] }
+      : {
+          level: 'A2',
+          lexicalTopic: null,
+          grammarTopics: [],
+          wortstellung: false,
+          listening: false,
+        };
+    const screen = el('div', 'lib-screen lib-screen--veil');
+    screen.setAttribute('role', 'dialog');
+    screen.setAttribute('aria-modal', 'true');
+    screen.setAttribute('aria-label', t.title);
+    const card = el('div', 'lib-card lib-card--wide lib-quiz');
+    corners(card);
+    card.append(el('h2', 'lib-heading', t.title), el('div', 'lib-rule'));
+    card.append(el('p', 'lib-quiz-intro', t.intro));
+    const note = el('p', 'lib-quiz-status', t.checking);
+    note.setAttribute('role', 'status');
+    card.append(note);
+    void status.then((st) => {
+      note.textContent = !st.available ? t.noServer : !st.generationConfigured ? t.noKey : '';
+    });
+
+    const section = (title?: string | HTMLElement): HTMLElement => {
+      const box = el('section', 'lib-quiz-section');
+      if (title) box.append(typeof title === 'string' ? el('h3', 'lib-quiz-title', title) : title);
+      card.append(box);
+      return box;
+    };
+
+    /** Группа кнопок-радио. */
+    const radio = <T extends string | null>(
+      label: string,
+      options: [T, string][],
+      value: () => T,
+      set: (v: T) => void,
+      all: { b: HTMLButtonElement; v: T }[],
+    ): HTMLElement => {
+      const group = el('div', 'lib-tags');
+      group.setAttribute('role', 'radiogroup');
+      group.setAttribute('aria-label', label);
+      for (const [v, text] of options) {
+        const b = el('button', 'lib-tag', text);
+        b.type = 'button';
+        b.setAttribute('role', 'radio');
+        b.addEventListener('click', () => {
+          set(v);
+          for (const x of all) {
+            const on = x.v === value();
+            x.b.classList.toggle('is-on', on);
+            x.b.setAttribute('aria-checked', String(on));
+          }
+        });
+        const on = v === value();
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-checked', String(on));
+        group.append(b);
+        all.push({ b, v });
+      }
+      return group;
+    };
+
+    const levelBox = section(t.level);
+    const levelGroup = radio<CefrLevel>(
+      t.level,
+      CEFR_LEVELS.map((l): [CefrLevel, string] => [l, `${l} · ${t.levels[l] ?? ''}`]),
+      () => cur.level,
+      (v) => (cur.level = v),
+      [],
+    );
+    levelBox.append(levelGroup);
+
+    // Лексическая тема: «Любая», повседневные темы и дополнительные — одна группа-радио.
+    const lexBox = section(t.lexical);
+    const lexButtons: { b: HTMLButtonElement; v: string | null }[] = [];
+    const lex = (title: string | null, options: [string | null, string][]): void => {
+      if (title) lexBox.append(el('div', 'lib-quiz-group-title', title));
+      const g = radio<string | null>(
+        t.lexical,
+        options,
+        () => cur.lexicalTopic,
+        (v) => (cur.lexicalTopic = v),
+        lexButtons,
+      );
+      g.lang = 'de';
+      lexBox.append(g);
+    };
+    lex(null, [[null, t.lexicalAny]]);
+    (lexBox.lastElementChild?.firstElementChild as HTMLElement | null)?.setAttribute('lang', 'ru');
+    lex(
+      t.lexicalBase,
+      BASE_LEXICAL_TOPICS.map((x): [string, string] => [x, x]),
+    );
+    lex(
+      t.lexicalExtra,
+      EXTRA_LEXICAL_TOPICS.map((x): [string, string] => [x, x]),
+    );
+    lexBox.append(el('p', 'lib-field__note', t.lexicalNote));
+
+    // Темы: свои наборы слов и грамматика, вместе не больше MAX_GRAMMAR_TOPICS.
+    const topicsTitle = el('h3', 'lib-quiz-title');
+    const topicsBox = section(topicsTitle);
+    const topicButtons: { b: HTMLButtonElement; topic: string }[] = [];
+    const group = (title: string, topics: readonly string[], groupNote?: string): void => {
+      topicsBox.append(el('div', 'lib-quiz-group-title', title));
+      const tags = el('div', 'lib-tags');
+      tags.lang = 'de';
+      for (const topic of topics) {
+        const b = el('button', 'lib-tag', topic);
+        b.type = 'button';
+        b.addEventListener('click', () => {
+          const i = cur.grammarTopics.indexOf(topic);
+          if (i >= 0) cur.grammarTopics.splice(i, 1);
+          else if (cur.grammarTopics.length < MAX_GRAMMAR_TOPICS) cur.grammarTopics.push(topic);
+          syncTopics();
+        });
+        tags.append(b);
+        topicButtons.push({ b, topic });
+      }
+      topicsBox.append(tags);
+      if (groupNote) topicsBox.append(el('p', 'lib-field__note', groupNote));
+    };
+    group(t.groups.vocab ?? 'vocab', VOCAB_TOPICS, t.vocabNote);
+    for (const g of GRAMMAR_GROUPS) group(t.groups[g.id] ?? g.id, g.topics);
+
+    // Порядок слов и аудирование — отдельные потоки заданий поверх выбранных тем.
+    const extras = section();
+    const check = (
+      label: string,
+      value: () => boolean,
+      set: (v: boolean) => void,
+    ): { row: HTMLElement; input: HTMLInputElement; hint: HTMLElement; sync: () => void } => {
+      const row = el('label', 'lib-quiz-check');
+      const input = el('input');
+      input.type = 'checkbox';
+      input.addEventListener('change', () => {
+        set(input.checked);
+        syncTopics();
+      });
+      const hint = el('span', 'lib-field__note');
+      row.append(input, el('span', '', label), hint);
+      extras.append(row);
+      return { row, input, hint, sync: () => (input.checked = value()) };
+    };
+    const word = check(
+      t.wortstellung,
+      () => cur.wortstellung,
+      (v) => (cur.wortstellung = v),
+    );
+    const listen = check(
+      t.listening,
+      () => cur.listening,
+      (v) => (cur.listening = v),
+    );
+    listen.hint.textContent = t.listeningHint;
+
+    const need = el('p', 'lib-quiz-need');
+    need.setAttribute('role', 'status');
+    card.append(need);
+    const done = button(t.done, 'lib-btn--gold', () =>
+      h.onDone({ ...cur, grammarTopics: [...cur.grammarTopics] }),
+    );
+    const actions = el('div', 'lib-row lib-quiz-actions');
+    actions.append(
+      done,
+      button(t.bank, 'lib-btn--small', h.onBank),
+      button(t.cancel, 'lib-btn--small lib-btn--quiet', h.onCancel),
+    );
+    card.append(actions);
+
+    const syncTopics = (): void => {
+      const n = cur.grammarTopics.length;
+      topicsTitle.textContent = t.topics(n, MAX_GRAMMAR_TOPICS);
+      for (const { b, topic } of topicButtons) {
+        const on = cur.grammarTopics.includes(topic);
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', String(on));
+        b.disabled = !on && n >= MAX_GRAMMAR_TOPICS;
+      }
+      // Порядок слов — на материале первой грамматической темы: у наборов слов его нет.
+      const firstGrammar = cur.grammarTopics.find((topic) => !isVocabTopic(topic)) ?? null;
+      if (!firstGrammar) cur.wortstellung = false;
+      word.input.disabled = !firstGrammar;
+      word.row.classList.toggle('is-locked', !firstGrammar);
+      word.hint.textContent = t.wortstellungHint(firstGrammar);
+      word.sync();
+      listen.sync();
+      const ok = n > 0 || cur.listening;
+      done.disabled = !ok;
+      need.textContent = ok ? '' : t.needTopic;
+    };
+    syncTopics();
+
+    screen.append(card);
+    // Фокус — на выбранный уровень: с него начинается выбор.
+    levelGroup.querySelector<HTMLElement>('.is-on')?.setAttribute('data-autofocus', '');
+    this.show(screen, 'quiz', true);
   }
 
   // ─────────────── настройки ───────────────

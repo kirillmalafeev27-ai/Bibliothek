@@ -137,18 +137,26 @@ export interface GameState {
 export interface CreateOptions {
   /** Медиана времени ответа игрока, с. */
   tMedSec?: number;
+  /**
+   * Допустимые пределы T_med, с. По умолчанию — для вопросов банка (3–10 с); у заданий
+   * генератора предложение читается дольше, и предел шире (balance.paceGenerated).
+   */
+  tMedRange?: readonly [number, number];
   /** Подсказки, выключенные игроком в настройках. */
   hintsOff?: Partial<HintSet>;
 }
 
-export function unitSeconds(tMedSec: number): number {
-  const t = Math.min(balance.pace.maxTmedSec, Math.max(balance.pace.minTmedSec, tMedSec));
+export function unitSeconds(
+  tMedSec: number,
+  range: readonly [number, number] = [balance.pace.minTmedSec, balance.pace.maxTmedSec],
+): number {
+  const t = Math.min(range[1], Math.max(range[0], tMedSec));
   return t + balance.unitOverheadSec;
 }
 
 export function createState(level: LevelConfig, seed: number, opts: CreateOptions = {}): GameState {
   const layout = generateLevel(level, seed);
-  const unitA = unitSeconds(opts.tMedSec ?? balance.pace.defaultTmedSec);
+  const unitA = unitSeconds(opts.tMedSec ?? balance.pace.defaultTmedSec, opts.tMedRange);
   const librarians: Librarian[] = layout.lib.desks.map((desk, id) => ({
     id,
     cell: desk,

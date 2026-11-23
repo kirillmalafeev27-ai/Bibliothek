@@ -10,10 +10,10 @@ import { memoryStorage } from '../src/shared/storage';
 const questions = bank as Question[];
 
 describe('банк вопросов (12.1)', () => {
-  it('60 вопросов пяти видов, у каждого 2–4 разных варианта и верный индекс', () => {
-    expect(questions.length).toBe(60);
+  it('72 вопроса шести видов, у каждого 2–4 разных варианта и верный индекс', () => {
+    expect(questions.length).toBe(72);
     const ids = new Set(questions.map((q) => q.id));
-    expect(ids.size).toBe(60);
+    expect(ids.size).toBe(72);
     const kinds = new Map<string, number>();
     for (const q of questions) {
       const kind = q.id.split('-')[0]!;
@@ -27,7 +27,7 @@ describe('банк вопросов (12.1)', () => {
       expect(['de', 'ru']).toContain(q.promptLang);
       expect(['de', 'ru']).toContain(q.optionsLang);
     }
-    expect([...kinds.keys()].sort()).toEqual(['art', 'pl', 'prep', 'tr', 'verb']);
+    expect([...kinds.keys()].sort()).toEqual(['art', 'kas', 'pl', 'prep', 'tr', 'verb']);
     for (const n of kinds.values()) expect(n).toBe(12);
   });
 
@@ -64,7 +64,7 @@ describe('LocalBankProvider (12.2, 12.3)', () => {
       p.report({ id: q.id, correct: true, timeMs: 1000 });
     }
     // За 600 показов встречаются все вопросы.
-    expect(new Set(seen).size).toBe(60);
+    expect(new Set(seen).size).toBe(72);
   });
 
   it('вопрос с ошибкой возвращается через 4–6 вопросов', async () => {

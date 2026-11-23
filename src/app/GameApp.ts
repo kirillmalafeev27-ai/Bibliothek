@@ -28,18 +28,32 @@ import type { SceneHost } from '../scenes/host';
 import { HOST_KEY } from '../scenes/host';
 import { loadFonts } from '../shared/fonts';
 import type { Layout } from '../shared/layout';
-import { computeLayout, readSafeArea, rectStyle } from '../shared/layout';
+import {
+  computeLayout,
+  defaultLayoutSpec,
+  genLayoutSpec,
+  readSafeArea,
+  rectStyle,
+} from '../shared/layout';
 import { Pace } from '../shared/pace';
 import { Quality } from '../shared/quality';
 import { QuestionPanel } from '../shared/QuestionPanel';
-import type { QuestionProvider } from '../shared/questions/types';
+import type { ConfigurableQuestionProvider } from '../shared/questions/AiQuestionProvider';
+import { isConfigurable } from '../shared/questions/AiQuestionProvider';
+import type { Speaker } from '../shared/questions/speech';
+import { createSpeaker } from '../shared/questions/speech';
+import type { CefrLevel, QuizConfig } from '../shared/questions/topics';
+import { CEFR_LEVELS, isVocabTopic, sanitizeQuizConfig } from '../shared/questions/topics';
+import type { Question, QuestionProvider } from '../shared/questions/types';
 import type { KeyValueStorage } from '../shared/storage';
-import { browserStorage, prefixed } from '../shared/storage';
+import { browserStorage, prefixed, readJson, writeJson } from '../shared/storage';
 import { applyParchmentTextures, applyParchmentVars } from '../shared/themes/parchment';
 import type { ThemeColors } from '../shared/themes/parchment';
 import { GearWidget } from '../ui/GearWidget';
 import { Screens, el } from '../ui/screens/Screens';
 import { DebugPanel } from './DebugPanel';
+import type { QuestionKind } from './pacing';
+import { paceConfigFor, paceKeyFor, roundTmed, tMedRangeFor } from './pacing';
 import { Round } from './Round';
 import type { TutorialKey } from './stores';
 import { Progress, STORAGE_PREFIX, Settings } from './stores';
@@ -70,6 +84,18 @@ export interface MountOptions {
 }
 
 type Phase = 'boot' | 'menu' | 'intro' | 'play' | 'outro' | 'results' | 'test';
+
+/**
+ * Выбор тем вопросов. chosen — игрок уже решал (темы или встроенный набор): тогда «Играть»
+ * больше не открывает выбор тем сам.
+ */
+interface QuizChoice {
+  chosen?: unknown;
+  config?: unknown;
+}
+
+/** Сколько «Играть» ждёт ответа сервера генерации, прежде чем идти дальше без выбора тем. */
+const STATUS_WAIT_MS = 2500;
 
 const THEME: ThemeColors = {
   parchment: palette.parchment,
@@ -114,7 +140,27 @@ export class GameApp {
   private readonly screens: Screens;
   private readonly settings: Settings;
   private readonly progress: Progress;
-  private readonly pace: Pace;
+  /** Хранилище игры (ключи с префиксом `library:`) и общее хранилище серии (темп). */
+  private readonly store: KeyValueStorage;
+  private readonly paceStore: KeyValueStorage;
+  /** Темп по видам вопросов: банк — общий ключ серии, генератор — свой на каждый уровень A1–C1. */
+  private readonly paces = new Map<string, Pace>();
+  /** Вид вопросов текущего раунда (src/app/pacing.ts). */
+  private kind: QuestionKind = 'bank';
+  /** Источник, которому игрок выбирает темы (ИИ-генерация); у встроенного банка — null. */
+  private readonly quiz: ConfigurableQuestionProvider | null;
+  private quizChosen = false;
+  /** Генерация на сервере подключена (ответ /api/quiz/status); null — ответа ещё нет. */
+  private generationOn: boolean | null = null;
+  private readonly speaker: Speaker;
+  /** Раскладка с большой панелью вопроса — для заданий генератора. */
+  private genLayout = false;
+  /** Последний ответ был на задание генератора: его время идёт в учёт генератора. */
+  private lastAnswerGenerated = false;
+  /** Номер раунда: поздний ответ генерации к прошлому раунду не начинает новый. */
+  private roundSeq = 0;
+  /** Интро кончилось, а первого вопроса ещё нет: раунд ждёт генерацию (12.4). */
+  private waitingFirst = false;
   private readonly quality: Quality;
   private readonly audio: GameAudio;
   private readonly provider: ArtProvider;
@@ -156,7 +202,21 @@ export class GameApp {
     const store = prefixed(storage, STORAGE_PREFIX);
     this.settings = new Settings(store);
     this.progress = new Progress(store);
-    this.pace = new Pace(storage, balance.pace);
+    this.store = store;
+    this.paceStore = storage;
+    // Темы — до первого раунда: панель сразу загружает первый вопрос (12.4). Если источник уже
+    // настроил встраивающий его хозяин, его выбор главнее сохранённого.
+    this.quiz = isConfigurable(options.questions) ? options.questions : null;
+    if (this.quiz) {
+      const saved = readJson<QuizChoice>(store, 'quiz', {});
+      this.quizChosen = saved.chosen === true || this.quiz.config() !== null;
+      if (saved.chosen === true && this.quiz.config() === null)
+        this.quiz.configure(sanitizeQuizConfig(saved.config));
+      void this.quiz.status().then((st) => {
+        this.generationOn = st.generationConfigured;
+        if (this.phase === 'menu' || this.phase === 'boot') this.syncGenLayout();
+      });
+    }
     this.quality = new Quality(balance.perf, this.settings.data.quality, this.settings.data.motion);
     this.audio = options.audio ?? new GameAudioEngine();
     this.provider = options.art ?? manuscriptProvider;
@@ -178,11 +238,15 @@ export class GameApp {
         correctFlashMs: balance.correctFlashMs,
         swapMs: balance.questionSwapMs,
         wrongFeedbackMs: balance.wrongFeedbackMs,
+        wrongFeedbackGeneratedMs: balance.wrongFeedbackGeneratedMs,
         doubleTapGuardMs: balance.doubleTapGuardMs,
       },
-      onAnswer: (a) => this.onAnswer(a.correct, a.timeMs),
+      onAnswer: (a) => this.onAnswer(a.correct, a.timeMs, a.generated),
       exposeAnswer: options.dev === true,
     });
+    // Аудирование: фраза звучит сама, если звук включён; кнопка «Слушать» — всегда.
+    this.speaker = createSpeaker({ volume: () => this.settings.data.sfx });
+    this.panel.setSpeaker(this.speaker, () => this.settings.data.sound);
     this.gear = new GearWidget({
       onThrow: () => this.onThrowButton(),
       onStay: () => this.onStay(),
@@ -294,7 +358,12 @@ export class GameApp {
     const w = this.root.clientWidth;
     const h = this.root.clientHeight;
     if (w < 2 || h < 2) return;
-    const layout = computeLayout(w, h, readSafeArea(this.root));
+    const layout = computeLayout(
+      w,
+      h,
+      readSafeArea(this.root),
+      this.genLayout ? genLayoutSpec : defaultLayoutSpec,
+    );
     this.layout = layout;
     this.root.dataset.orient = layout.orientation;
     this.root.dataset.tier = layout.tier;
@@ -389,25 +458,149 @@ export class GameApp {
   private showMenu(): void {
     this.endRound();
     this.phase = 'menu';
+    this.syncGenLayout();
     // В панели вопроса — факт о немецком, как на экране загрузки.
     this.panel.showNote(tipsRu[Math.floor(Math.random() * tipsRu.length)] ?? ru.menuLead);
     this.panel.setHeader(ru.subtitle, null);
     this.startAttract();
+    this.renderMenu();
+  }
+
+  private renderMenu(): void {
+    const quiz = this.quiz;
     this.screens.menu(
       {
         onPlay: () => {
           this.audio.unlock();
-          if (this.progress.data.unlocked > 1) this.showLevels();
-          else this.startLevel(1);
+          void this.play();
         },
         onLevels: () => {
           this.audio.unlock();
           this.showLevels();
         },
         onSettings: () => this.showSettings(null),
+        quiz: quiz ? { summary: this.quizSummary(), onOpen: () => this.openQuiz() } : undefined,
       },
       this.progress.data.unlocked > 1,
     );
+  }
+
+  /** «Играть»: в первый раз, если генерация на сервере есть, — сначала выбор тем. */
+  private async play(): Promise<void> {
+    const quiz = this.quiz;
+    if (quiz && !this.quizChosen) {
+      const st = await Promise.race([
+        quiz.status(),
+        new Promise<null>((resolve) => window.setTimeout(() => resolve(null), STATUS_WAIT_MS)),
+      ]);
+      if (this.destroyed || this.phase !== 'menu' || this.screens.kind !== 'menu') return;
+      if (st?.generationConfigured) {
+        this.openQuiz(() => this.playChosen());
+        return;
+      }
+    }
+    this.playChosen();
+  }
+
+  private playChosen(): void {
+    if (this.progress.data.unlocked > 1) this.showLevels();
+    else this.startLevel(1);
+  }
+
+  private quizSummary(): string {
+    const cfg = this.quiz?.config();
+    if (!cfg) return ru.quiz.summaryBank;
+    const topics = [...cfg.grammarTopics];
+    if (cfg.wortstellung) topics.push('Wortstellung');
+    if (cfg.listening) topics.push(ru.quiz.listeningOnly);
+    return ru.quiz.summary(cfg.level, topics, cfg.lexicalTopic);
+  }
+
+  /** Выбор тем (шаги меню Morskoy). then — что открыть после «Готово». */
+  private openQuiz(then?: () => void): void {
+    const quiz = this.quiz;
+    if (!quiz || this.screens.kind === 'quiz') return;
+    const apply = (cfg: QuizConfig | null): void => {
+      writeJson(this.store, 'quiz', { chosen: true, config: cfg });
+      this.quizChosen = true;
+      // Те же темы — очереди не сбрасываются: уже готовые задания пригодятся.
+      if (JSON.stringify(cfg) !== JSON.stringify(quiz.config())) {
+        quiz.configure(cfg);
+        this.panel.reload();
+      }
+      this.syncGenLayout();
+      if (then) then();
+      else if (this.phase === 'menu') this.renderMenu();
+      else this.screens.back();
+    };
+    this.screens.quiz(quiz.config(), quiz.status(), {
+      onDone: (cfg) => apply(cfg),
+      onBank: () => apply(null),
+      onCancel: () => this.screens.back(),
+    });
+  }
+
+  /**
+   * Вопросы раунда: при выбранных темах — задания генератора, если сервер не ответил, что её нет
+   * (свои наборы слов отдаются и без ключа); иначе — те, что на очереди. Сомнение — в пользу
+   * генератора: его раунд щадящий, а раунд банка с заданиями-предложениями был бы непосильным.
+   */
+  private roundKind(): QuestionKind {
+    const cfg = this.quiz?.config();
+    if (cfg && (this.generationOn !== false || cfg.grammarTopics.some(isVocabTopic)))
+      return 'generated';
+    return this.panel.peekKind() ?? 'bank';
+  }
+
+  /** С заданиями генератора панель вопроса больше: им нужнее место, чем миниатюре. */
+  private syncGenLayout(kind: QuestionKind = this.roundKind()): void {
+    const on = kind === 'generated';
+    this.root.classList.toggle('is-gen', on);
+    if (on === this.genLayout) return;
+    this.genLayout = on;
+    this.relayout();
+  }
+
+  /** Выбраны только свои наборы слов (без аудирования): у их заданий свой темп. */
+  private vocabOnly(): boolean {
+    const cfg = this.quiz?.config();
+    return !!cfg && !cfg.listening && cfg.grammarTopics.every(isVocabTopic);
+  }
+
+  /**
+   * Учёт темпа для вида вопросов: банк, свои наборы слов или задания генератора уровня A1–C1
+   * (выбранного).
+   */
+  private paceFor(kind: QuestionKind, cefr: string = this.quiz?.config()?.level ?? 'B1'): Pace {
+    const vocab = kind === 'generated' && this.vocabOnly();
+    const key = paceKeyFor(kind, cefr, vocab);
+    let t = this.paces.get(key);
+    if (!t) {
+      t = new Pace(this.paceStore, paceConfigFor(kind, cefr, vocab), key);
+      this.paces.set(key, t);
+    }
+    return t;
+  }
+
+  /**
+   * Темп раунда. Первый раунд с заданиями генератора на новом уровне A1–C1 берёт темп с
+   * ближайшего уровня, где ученик уже отвечал: это тот же ученик и те же форматы, а значение по
+   * умолчанию — только догадка.
+   */
+  private roundPace(kind: QuestionKind): Pace {
+    const own = this.paceFor(kind);
+    if (kind === 'generated' && !own.known() && !this.vocabOnly()) {
+      const cefr = this.quiz?.config()?.level ?? 'B1';
+      const i = CEFR_LEVELS.indexOf(cefr as CefrLevel);
+      const near = CEFR_LEVELS.filter((l) => l !== cefr).sort(
+        (a, b) => Math.abs(CEFR_LEVELS.indexOf(a) - i) - Math.abs(CEFR_LEVELS.indexOf(b) - i),
+      );
+      for (const l of near) {
+        const t = this.paceFor(kind, l);
+        if (t.known()) return t;
+      }
+    }
+    return own;
   }
 
   private showLevels(): void {
@@ -448,6 +641,7 @@ export class GameApp {
     if (s.quality !== this.quality.level && !this.quality.wasAutoLowered)
       this.quality.setLevel(s.quality);
     this.audio.setSettings({ on: s.sound, sfx: s.sfx, ambient: s.ambient });
+    if (!s.sound) this.speaker.stop();
   }
 
   // ─────────────── раунд ───────────────
@@ -465,17 +659,25 @@ export class GameApp {
     this.closeTutorial(false);
     this.tutorialQueue = [];
     this.audio.setPaused(false);
+    this.waitingFirst = false;
   }
 
   startLevel(id: number): void {
     const level = levelById(Math.min(LEVEL_COUNT, Math.max(1, id)));
     this.endRound();
     const seed = randomSeed();
-    // Темп фиксируется на старте раунда и внутри раунда не меняется (3.4).
+    // Темп — по виду вопросов этого раунда (src/app/pacing.ts); фиксируется на старте раунда
+    // и внутри раунда не меняется (3.4). У заданий генератора единица A длиннее: предложение
+    // читается дольше слова, и раунд в единицах A остаётся тем же (с запасом на разброс).
+    const kind = this.roundKind();
+    this.kind = kind;
+    this.syncGenLayout(kind);
     const round = new Round(level, seed, {
-      tMedSec: this.pace.tMedSec(),
+      tMedSec: roundTmed(kind, this.roundPace(kind).tMedSec()),
+      tMedRange: tMedRangeFor(kind),
       hintsOff: this.settings.data.hintsOff,
     });
+    this.roundSeq++;
     this.round = round;
     this.answerTimes = [];
     this.exitNear = false;
@@ -492,23 +694,58 @@ export class GameApp {
     });
     this.panel.showNote(ru.getReady);
     this.panel.warmUp();
-    this.screens.intro(ru.intro, () => this.scene?.skipIntro());
+    this.showIntroScreen();
     this.refreshHud();
   }
 
   private onIntroDone(): void {
     if (this.phase !== 'intro') return;
+    if (!this.panel.hasQuestion()) {
+      // Раунд не начинается без вопроса (12.4): пока генерация готовит первое задание, мир
+      // стоит, а в интро и в панели — «Готовлю вопросы…».
+      if (this.waitingFirst) return;
+      this.waitingFirst = true;
+      const seq = this.roundSeq;
+      this.panel.showNote(ru.preparing, true);
+      if (!this.paused) this.showIntroScreen();
+      void this.panel.whenReady().then(() => {
+        if (seq !== this.roundSeq || this.phase !== 'intro' || !this.waitingFirst) return;
+        // На паузе раунд начнётся, когда игрок вернётся (setPaused).
+        if (this.paused) return;
+        this.beginPlay();
+      });
+      return;
+    }
+    this.beginPlay();
+  }
+
+  private beginPlay(): void {
+    this.waitingFirst = false;
     this.screens.clear();
     this.phase = 'play';
     this.panel.start();
     this.maybeTutorial('move');
   }
 
+  private showIntroScreen(): void {
+    this.screens.intro(
+      ru.intro,
+      () => this.scene?.skipIntro(),
+      this.waitingFirst ? ru.preparing : undefined,
+    );
+  }
+
   private onRoundEvents(events: GameEvent[], state: GameState): void {
     for (const e of events) {
       switch (e.type) {
         case 'ANSWERED':
-          this.pace.record(e.correct, e.timeMs, e.paced);
+          // Время ответа — в учёт своего вида: задание генератора или вопрос банка (запасной
+          // банк посреди раунда с генератором идёт в общий учёт серии).
+          this.paceFor(this.lastAnswerGenerated ? 'generated' : 'bank').record(
+            e.correct,
+            e.timeMs,
+            e.paced,
+          );
           this.answerTimes.push(e.timeMs);
           break;
         case 'DENIED': {
@@ -613,9 +850,10 @@ export class GameApp {
 
   // ─────────────── ввод ───────────────
 
-  private onAnswer(correct: boolean, timeMs: number): void {
+  private onAnswer(correct: boolean, timeMs: number, generated: boolean): void {
     if (!this.round || this.phase !== 'play') return;
     this.audio.unlock();
+    this.lastAnswerGenerated = generated;
     this.round.answer(correct, timeMs);
   }
 
@@ -668,6 +906,11 @@ export class GameApp {
       const code = e.code;
       if (code === 'Backquote' && this.debug) {
         this.debug.toggle();
+        e.preventDefault();
+        return;
+      }
+      if (code === 'Escape' && this.screens.kind === 'quiz') {
+        this.screens.back();
         e.preventDefault();
         return;
       }
@@ -772,7 +1015,11 @@ export class GameApp {
       });
     } else {
       this.screens.clear();
-      if (this.phase === 'intro') this.screens.intro(ru.intro, () => this.scene?.skipIntro());
+      if (this.phase === 'intro') {
+        // Первое задание пришло, пока стояла пауза: раунд начинается сразу.
+        if (this.waitingFirst && this.panel.hasQuestion()) this.beginPlay();
+        else this.showIntroScreen();
+      }
     }
     this.refreshHud();
   }
@@ -891,7 +1138,11 @@ export class GameApp {
       !this.paused &&
       !this.tutorial
     ) {
-      if (this.phase === 'play' || round.state.status === 'catchScene') round.tick(dt);
+      // Панель ждёт задание от генерации (очередь опустела): мир стоит — ожидание не должно
+      // стоить игроку времени (12.4). С заранее загруженным вопросом этого не бывает.
+      const waiting = this.phase === 'play' && this.panel.waiting;
+      if ((this.phase === 'play' || round.state.status === 'catchScene') && !waiting)
+        round.tick(dt);
       if (this.phase === 'play') this.panel.tick(dtMs);
     }
     if (
@@ -906,7 +1157,7 @@ export class GameApp {
     if (this.tutorial) this.positionTutorial();
     this.refreshHud();
     this.updateAudio(dt);
-    this.debug?.update(dt, this.round ?? this.attract, this.pace, this.quality);
+    this.debug?.update(dt, this.round ?? this.attract, this.paceFor(this.kind), this.quality);
   }
 
   private refreshHud(): void {
@@ -1006,6 +1257,16 @@ export class GameApp {
     return this.round;
   }
 
+  /** Для сквозного теста: показать задание в панели (раскладка заданий генератора). */
+  debugShowQuestion(q: Question): void {
+    this.panel.debugShow(q);
+  }
+
+  /** Для сквозного теста и отладки: вид вопросов раунда и раскладка. */
+  questionInfo(): { kind: QuestionKind; genLayout: boolean; config: QuizConfig | null } {
+    return { kind: this.kind, genLayout: this.genLayout, config: this.quiz?.config() ?? null };
+  }
+
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
@@ -1014,6 +1275,7 @@ export class GameApp {
     for (const fn of this.cleanups) fn();
     this.cleanups.length = 0;
     this.panel.destroy();
+    this.speaker.destroy();
     this.gear.destroy();
     this.quality.destroy();
     this.audio.destroy();

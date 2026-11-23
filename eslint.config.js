@@ -4,7 +4,16 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'test-results', 'playwright-report'] },
+  {
+    ignores: [
+      'dist',
+      'dist-server',
+      'node_modules',
+      'coverage',
+      'test-results',
+      'playwright-report',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -14,7 +23,10 @@ export default tseslint.config(
       globals: { ...globals.browser, ...globals.node },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/consistent-type-imports': 'error',
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     },
@@ -23,12 +35,15 @@ export default tseslint.config(
     // Логика игры — чистый TypeScript: Phaser и DOM в src/core запрещены (план, 0.3).
     files: ['src/core/**/*.ts'],
     rules: {
-      'no-restricted-imports': ['error', { patterns: ['phaser', 'phaser/*', '../render/*', '../scenes/*', '../ui/*'] }],
+      'no-restricted-imports': [
+        'error',
+        { patterns: ['phaser', 'phaser/*', '../render/*', '../scenes/*', '../ui/*'] },
+      ],
       'no-restricted-globals': ['error', 'window', 'document', 'localStorage', 'performance'],
     },
   },
   {
-    files: ['tools/**/*.ts', 'e2e/**/*.ts'],
+    files: ['tools/**/*.ts', 'e2e/**/*.ts', 'server/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
   prettier,

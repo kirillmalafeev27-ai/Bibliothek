@@ -478,5 +478,101 @@
     "options": ["Fenster", "Fenstern", "Fensters", "Fenstere"],
     "optionsLang": "de",
     "correctIndex": 0
+  },
+  {
+    "id": "kas-001",
+    "prompt": "___ Bibliothekar hört jedes Geräusch.",
+    "promptLang": "de",
+    "options": ["Der", "Den", "Dem", "Des"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-002",
+    "prompt": "Im Lesesaal wartet ___ Freund.",
+    "promptLang": "de",
+    "options": ["mein", "meinen", "meinem", "meines"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-003",
+    "prompt": "Ich sehe ___ Leuchter.",
+    "promptLang": "de",
+    "options": ["den", "dem", "der", "des"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-004",
+    "prompt": "Wir suchen ___ Schlüssel.",
+    "promptLang": "de",
+    "options": ["einen", "ein", "einem", "eines"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-005",
+    "prompt": "Ich rufe ___ Bibliothekar an.",
+    "promptLang": "de",
+    "options": ["den", "dem", "der", "des"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-006",
+    "prompt": "Ich helfe ___ Leser.",
+    "promptLang": "de",
+    "options": ["dem", "den", "der", "des"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-007",
+    "prompt": "Das Buch gehört ___ Bibliothek.",
+    "promptLang": "de",
+    "options": ["der", "die", "dem", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-008",
+    "prompt": "Ich schenke ___ Kind ein Buch.",
+    "promptLang": "de",
+    "options": ["dem", "das", "des", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-009",
+    "prompt": "Das ist der Schlüssel ___ Bibliothekars.",
+    "promptLang": "de",
+    "options": ["des", "dem", "den", "der"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-010",
+    "prompt": "Das ist die Lampe ___ Leserin.",
+    "promptLang": "de",
+    "options": ["der", "die", "dem", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-011",
+    "prompt": "Ich lege das Buch auf ___ Pult.",
+    "promptLang": "de",
+    "options": ["das", "dem", "des", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
+  },
+  {
+    "id": "kas-012",
+    "prompt": "Das Buch liegt auf ___ Pult.",
+    "promptLang": "de",
+    "options": ["dem", "das", "des", "den"],
+    "optionsLang": "de",
+    "correctIndex": 0
   }
 ]

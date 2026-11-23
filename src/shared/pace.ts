@@ -2,6 +2,9 @@
  * Учёт темпа игрока — общий для серии (план, раздел 3).
  * T_med — медиана времени ответа по последним 20 ответам; p — доля верных по последним 30.
  * Хранится между сессиями под общим ключом `series:pace`, фиксируется на старте раунда.
+ * У заданий ИИ-генератора — свой ключ на каждый уровень (`series:pace:gen:B1`), у своих наборов
+ * слов — свой (`series:pace:gen:vocab`): предложение читается в разы дольше слова, и общий учёт
+ * делал бы раунд то непосильным, то пустым (src/app/pacing.ts).
  */
 import type { KeyValueStorage } from './storage';
 
@@ -34,12 +37,13 @@ export class Pace {
   constructor(
     private readonly storage: KeyValueStorage,
     private readonly cfg: PaceConfig,
+    private readonly key: string = PACE_KEY,
   ) {
     this.load();
   }
 
   private load(): void {
-    const raw = this.storage.get(PACE_KEY);
+    const raw = this.storage.get(this.key);
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw) as Partial<PaceData>;
@@ -57,7 +61,7 @@ export class Pace {
   }
 
   private save(): void {
-    this.storage.set(PACE_KEY, JSON.stringify(this.data));
+    this.storage.set(this.key, JSON.stringify(this.data));
   }
 
   /**
@@ -97,5 +101,10 @@ export class Pace {
 
   samples(): number {
     return this.data.times.length;
+  }
+
+  /** Ответов хватает, чтобы медиана была своей, а не значением по умолчанию. */
+  known(): boolean {
+    return this.data.times.length >= MIN_SAMPLES;
   }
 }

@@ -17,6 +17,8 @@ export const ru = {
   headerReady: 'Готов! Выбери, что делать',
   headerQuiet: 'Тихо: ошибку услышит',
   getReady: 'Приготовься…',
+  preparing: 'Готовлю вопросы…',
+  listen: 'Слушать',
   optionLabel: (n: number, text: string): string => `Вариант ${n}: ${text}`,
   keyHint: (n: number): string => `${n}`,
   promptLabel: 'Задание',
@@ -55,6 +57,61 @@ export const ru = {
   close: 'Закрыть',
   menuLead: 'Он слеп, но слышит всё.',
   menuHow: 'Отвечай верно — и шагай тихо. Ошибёшься — с полки упадёт книга.',
+  menuQuiz: 'Вопросы',
+
+  // Выбор тем вопросов (движок Morskoy, docs/GENERATION.md)
+  quiz: {
+    title: 'Вопросы',
+    summaryBank: 'Вопросы: встроенный набор',
+    summary: (level: string, topics: readonly string[], lexical: string | null): string =>
+      `Вопросы: ${level} · ${topics.slice(0, 2).join(', ')}${
+        topics.length > 2 ? ` и ещё ${topics.length - 2}` : ''
+      }${lexical ? ` · ${lexical}` : ''}`,
+    listeningOnly: 'аудирование',
+    intro:
+      'Задания сочиняет ИИ: целые предложения, девять форматов — от выбора варианта до исправления ошибки. Темы чередуются.',
+    level: 'Уровень немецкого',
+    levels: {
+      A1: 'начальный',
+      A2: 'элементарный',
+      B1: 'средний',
+      B2: 'выше среднего',
+      C1: 'продвинутый',
+    } as Record<string, string>,
+    lexical: 'Лексическая тема',
+    lexicalAny: 'Любая',
+    lexicalBase: 'Повседневные',
+    lexicalExtra: 'Ещё темы: библиотека, книги, сказки, средневековье и не только',
+    lexicalNote: 'Слова заданий — из этой темы; грамматика от неё не зависит.',
+    topics: (n: number, max: number): string => `Темы — выбрано ${n} из ${max}`,
+    groups: {
+      vocab: 'Свои наборы слов',
+      verbs: 'Глаголы',
+      nouns: 'Существительные, артикли, местоимения',
+      adjectives: 'Прилагательные',
+      prepositions: 'Предлоги',
+      syntax: 'Порядок слов и отрицание',
+      clauses: 'Придаточные',
+      advanced: 'Продвинутое',
+    } as Record<string, string>,
+    vocabNote:
+      'Только слова из списка — по смыслу и с предлогами. Задания составлены заранее: уровень и лексическая тема на них не влияют.',
+    wortstellung: 'Порядок слов (Wortstellung)',
+    wortstellungHint: (topic: string | null): string =>
+      topic
+        ? `Задания на порядок слов на материале темы «${topic}»`
+        : 'Сначала выбери грамматическую тему',
+    listening: 'Аудирование',
+    listeningHint: 'Немецкая фраза звучит вслух — выбери точный перевод',
+    needTopic: 'Выбери хотя бы одну тему или аудирование',
+    checking: 'Проверяю сервер генерации…',
+    noKey:
+      'На сервере не задан ключ генерации (AITUNNEL_API_KEY) — пока будут вопросы из встроенного набора. Свои наборы слов работают и без ключа.',
+    noServer: 'Сервер генерации недоступен — пока будут вопросы из встроенного набора.',
+    done: 'Готово',
+    bank: 'Встроенный набор',
+    cancel: 'Отмена',
+  },
 
   // Выбор уровня (11.5.2)
   chooseLevel: 'Выбор ночи',

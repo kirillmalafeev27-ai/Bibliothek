@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build --ssr server/index.ts --outDir dist-server --emptyOutDir",
+    "start": "node dist-server/index.js",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -14,7 +15,9 @@
     "format": "prettier --write .",
     "sim": "tsx tools/sim.ts",
     "e2e": "playwright test",
-    "shots": "playwright test e2e/screenshots.spec.ts"
+    "shots": "playwright test e2e/screenshots.spec.ts",
+    "test:quiz": "playwright test e2e/quiz.spec.ts",
+    "start:northflank": "node dist-server/index.js"
   },
   "dependencies": {
     "@fontsource/rubik": "^5.3.0",
@@ -35,5 +38,8 @@
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -1,14 +1,19 @@
 /**
- * Автономная страница игры. Параметры адреса (dev):
- *   ?art=gray        — серый прототип вместо рукописного арта;
+ * Автономная страница игры. Вопросы — от ИИ-генератора на сервере игры (движок Morskoy,
+ * docs/GENERATION.md); пока генерации нет, — из встроенного банка. Параметры адреса:
+ *   ?q=bank          — только встроенный банк, без выбора тем;
+ *   ?art=gray        — серый прототип вместо рукописного арта (dev);
  *   ?level=N         — сразу в игру на уровне N;
- *   ?scene=kit       — лист рукописного кита;
- *   ?scene=hearing   — сцена теста читаемости слуха (8.4).
+ *   ?q=edge          — вопросы с длинными составными словами (dev);
+ *   ?scene=kit       — лист рукописного кита (dev);
+ *   ?scene=hearing   — сцена теста читаемости слуха, 8.4 (dev).
  */
 import { GameApp } from './app/GameApp';
 import type { ArtProvider } from './art/ArtFactory';
+import { balance } from './config/balance';
+import { AiQuestionProvider } from './shared/questions/AiQuestionProvider';
 import { LocalBankProvider } from './shared/questions/LocalBankProvider';
-import type { Question } from './shared/questions/types';
+import type { Question, QuestionProvider } from './shared/questions/types';
 
 const root = document.getElementById('app');
 if (!root) throw new Error('main: нет элемента #app');
@@ -58,10 +63,23 @@ async function start(container: HTMLElement): Promise<void> {
       correctIndex: 0,
     },
   ];
-  const questions =
-    import.meta.env.DEV && params.get('q') === 'edge'
-      ? new LocalBankProvider(edge)
-      : new LocalBankProvider();
+  const bank = new LocalBankProvider();
+  let questions: QuestionProvider;
+  if (import.meta.env.DEV && params.get('q') === 'edge') questions = new LocalBankProvider(edge);
+  else if (params.get('q') === 'bank') questions = bank;
+  else {
+    const ai = balance.ai;
+    questions = new AiQuestionProvider({
+      fallback: bank,
+      batchSize: ai.batch,
+      refillAt: ai.refillAt,
+      firstWaitMs: ai.firstWaitMs,
+      nextWaitMs: ai.nextWaitMs,
+      requestTimeoutMs: ai.requestTimeoutMs,
+      retryWrongMin: ai.retryWrongMin,
+      retryWrongMax: ai.retryWrongMax,
+    });
+  }
   const app = new GameApp(container, {
     questions,
     art,

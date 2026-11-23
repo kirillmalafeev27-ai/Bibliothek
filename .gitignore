@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-server/
 coverage/
 test-results/
 playwright-report/
@@ -7,3 +8,6 @@ e2e/__shots__/
 *.log
 .DS_Store
 .vite/
+.env
+.env.local
+.env.*.local
